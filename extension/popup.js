@@ -432,7 +432,7 @@ async function buatAkun(e) {
     const daftar = [...akunList(), { nama, pub, role: admin ? "admin" : "user", script: admin ? [] : ids($("t-izin")) }];
     await terapkanDaftar(daftar, `Akun "${nama}" ditambahkan.`);
     $("akun-kosong").hidden = true;
-    $("t-nama").value = ""; $("t-pub").value = ""; $("t-admin-role").checked = false;
+    $("t-nama").value = ""; $("t-pub").value = ""; $("t-admin-role").checked = false; $("t-bagian-izin").hidden = false;
     checkboxes($("t-izin"), "t", [], () => {});
     tmsg(`Akun "${nama}" siap.`, "ok");
   } catch (err) {
@@ -563,6 +563,11 @@ $("tambah-akun").addEventListener("click", () => {
   tmsg("");
 });
 $("form-tambah").addEventListener("submit", buatAkun);
+const tutupTambah = () => { $("form-tambah").hidden = true; $("tambah-akun").setAttribute("aria-expanded", "false"); };
+$("t-tutup").addEventListener("click", tutupTambah);
+$("t-batal").addEventListener("click", tutupTambah);
+$("form-tambah").addEventListener("pointerdown", (e) => { if (e.target.id === "form-tambah") tutupTambah(); });
+$("t-admin-role").addEventListener("change", () => { $("t-bagian-izin").hidden = $("t-admin-role").checked; });
 $("form-login").addEventListener("submit", submit);
 // Tekan lama pada kolom: muncul menu "Tempel" seperti di aplikasi lain
 // (menu tempel bawaan browser sering tidak muncul di popup).

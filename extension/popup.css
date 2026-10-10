@@ -45,7 +45,6 @@ input[type=password] { letter-spacing: .25em; }
 #akun-list li.none { color: var(--muted); cursor: default; }
 #tambah-akun { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 10px; background: none; color: inherit; font-size: 22px; line-height: 1; cursor: pointer; }
 #tambah-akun[aria-expanded="true"] { background: var(--accent); color: #ffffff; }
-#form-tambah { margin: 12px 0; padding: 10px; border: 1px solid var(--line); border-radius: 10px; }
 .judul { margin: 10px 0 4px; font-size: 14px; font-weight: 600; } #form-tambah .judul:first-child { margin-top: 0; }
 .kecil { color: var(--muted); font-size: 12px; margin: 10px 0 4px; }
 .izin label { display: flex; align-items: center; gap: 8px; margin: 0; padding: 5px 0; color: inherit; font-size: 14px; cursor: pointer; }
@@ -130,16 +129,6 @@ header, #tabs { flex: none; }
 #tambah-akun { transition: background .15s; }
 
 /* Form tambah akun: muat di layar, hanya daftar script di dalamnya yang digulir */
-#pane-akses:has(#form-tambah:not([hidden])) { overflow-y: hidden; }
-#form-tambah:not([hidden]) { flex: 1 1 auto !important; min-height: 0; display: flex; flex-direction: column; margin: 8px 0 0; padding: 8px 10px; }
-#form-tambah > * { flex: none; }
-#form-tambah label { margin: 4px 0 2px; }
-#form-tambah input { padding: 7px 10px; }
-#form-tambah .judul { margin: 6px 0 2px; }
-#form-tambah #t-izin { flex: 1 1 auto; min-height: 90px; max-height: none; overflow-y: auto; }
-#form-tambah .izin label { padding: 3px 0; margin: 0; }
-#form-tambah button.utama { margin-top: 6px; }
-#form-tambah #t-msg { margin: 4px 0 0; min-height: 0; }
 
 /* Tab berbentuk oval (pil) dengan animasi halus */
 #tabs { gap: 8px; padding: 4px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); }
@@ -224,7 +213,7 @@ button.bahaya { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--
 .modal[hidden] { display: none; }
 .modal .kotak { width: 100%; max-width: 360px; box-sizing: border-box; padding: 18px; border-radius: 18px; background: #fff; border: 1px solid var(--line); box-shadow: 0 12px 40px rgba(42,14,18,.35); }
 .modal h2 { margin: 0 0 6px; font-size: 18px; }
-.modal input { width: 100%; box-sizing: border-box; }
+.modal input[type=text], .modal input[type=password] { width: 100%; box-sizing: border-box; }
 .modal .row { display: flex; gap: 8px; margin-top: 12px; }
 .modal .row button { flex: 1; margin: 0; }
 #mu-msg { min-height: 18px; margin: 8px 0 0; } #mu-msg.err { color: var(--danger); }
@@ -236,3 +225,28 @@ button.bahaya { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--
 #mu-kirim.memuat::before { content: ""; display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; border: 2px solid rgba(255,255,255,.45); border-top-color: #fff; border-radius: 50%; animation: putar .8s linear infinite; }
 #mu-kirim:disabled { opacity: .85; cursor: progress; }
 #mu-batal:disabled { opacity: .5; }
+
+/* Tambah akun: popup di tengah, isi bisa digulir, tombol tetap terlihat */
+#form-tambah.modal { margin: 0; padding: 16px; border: 0; border-radius: 0; }
+.kotak-tambah { display: flex; flex-direction: column; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); padding: 0; overflow: hidden; }
+.kotak-tambah .kepala { flex: none; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 8px; }
+.kotak-tambah .kepala h2 { margin: 0; }
+#t-tutup { width: 34px; height: 34px; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: none; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer; }
+.kotak-tambah .isi { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0 16px 8px; }
+.kotak-tambah .isi label { margin: 8px 0 3px; }
+.kotak-tambah .isi input[type="text"] { width: 100%; box-sizing: border-box; }
+.kotak-tambah .judul { margin: 12px 0 4px; }
+.kotak-tambah #t-izin { max-height: none; overflow: visible; }
+.kotak-tambah #t-msg { margin: 8px 0 0; min-height: 18px; }
+.kotak-tambah .kaki { flex: none; display: flex; gap: 8px; padding: 10px 16px 14px; border-top: 1px solid var(--line); background: #fff; }
+.kotak-tambah .kaki button { flex: 1; margin: 0; min-height: 46px; }
+#t-batal { padding: 13px 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
+.kotak-tambah .isi #t-bagian-izin[hidden] { display: none; }
+/* saklar role */
+.kotak-tambah .isi label.saklar { display: flex; align-items: center; gap: 12px; margin: 6px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; color: inherit; }
+.saklar input { position: absolute; opacity: 0; pointer-events: none; }
+.saklar .geser { flex: none; position: relative; width: 44px; height: 26px; border-radius: 999px; background: #e7cfd2; transition: background .15s; }
+.saklar .geser::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .15s; }
+.saklar input:checked + .geser { background: var(--accent); }
+.saklar input:checked + .geser::after { transform: translateX(18px); }
+.saklar small { display: block; color: var(--muted); font-size: 12px; }

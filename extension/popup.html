@@ -109,23 +109,33 @@
           <button id="tambah-akun" type="button" aria-label="Tambah akun" aria-expanded="false">+</button>
         </div>
 
-        <form id="form-tambah" hidden novalidate>
-          <p class="judul">Tambah akun</p>
-          <label for="t-nama">Nama</label>
-          <input id="t-nama" type="text" autocomplete="off" maxlength="40" spellcheck="false">
-          <label for="t-pub">Public key (66 karakter hex)</label>
-          <input id="t-pub" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="02… atau 03…" data-tempel>
-          <button id="t-buat-key" type="button" class="kecil-btn">Buat key baru</button>
-          <div id="key-baru" hidden>
-            <p class="kecil">Private key akun baru. Simpan sekarang, tidak akan ditampilkan lagi:</p>
-            <pre id="key-baru-isi"></pre>
-            <button id="salin-key" type="button" class="kecil-btn">Salin private key</button>
+        <form id="form-tambah" class="modal" hidden novalidate>
+          <div class="kotak kotak-tambah">
+            <div class="kepala"><h2>Tambah akun</h2><button id="t-tutup" type="button" aria-label="Tutup">&times;</button></div>
+            <div class="isi">
+              <label for="t-nama">Nama</label>
+              <input id="t-nama" type="text" autocomplete="off" maxlength="40" spellcheck="false">
+              <label for="t-pub">Public key (66 karakter hex)</label>
+              <input id="t-pub" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="02… atau 03…" data-tempel>
+              <button id="t-buat-key" type="button" class="kecil-btn">Buat key baru</button>
+              <div id="key-baru" hidden>
+                <p class="kecil">Private key akun baru. Simpan sekarang, tidak akan ditampilkan lagi:</p>
+                <pre id="key-baru-isi"></pre>
+                <button id="salin-key" type="button" class="kecil-btn">Salin private key</button>
+              </div>
+              <p class="judul">Role</p>
+              <label class="saklar"><input id="t-admin-role" type="checkbox"><span class="geser" aria-hidden="true"></span><span><strong>Admin</strong> <small>akses semua script, bisa mengatur akun</small></span></label>
+              <div id="t-bagian-izin">
+                <p class="judul">Akses script</p>
+                <div id="t-izin" class="izin"></div>
+              </div>
+              <p id="t-msg" role="status"></p>
+            </div>
+            <div class="kaki">
+              <button id="t-batal" type="button">Batal</button>
+              <button id="t-buat" type="submit" class="utama">Buat akun</button>
+            </div>
           </div>
-          <label class="inline"><input id="t-admin-role" type="checkbox"> Jadikan admin (akses semua script)</label>
-          <p class="judul">Akses script</p>
-          <div id="t-izin" class="izin"></div>
-          <button id="t-buat" type="submit" class="utama">Buat akun</button>
-          <p id="t-msg" role="status"></p>
         </form>
 
         <div id="terpilih" hidden>
