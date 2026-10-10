@@ -27,6 +27,9 @@ jobs:
           fi
           echo "VERSION=$V" >> "$GITHUB_ENV"
 
+      - name: Perbarui katalog script dari header
+        run: node tools/build-catalog.mjs
+
       - name: Buat zip extension
         run: |
           cd extension

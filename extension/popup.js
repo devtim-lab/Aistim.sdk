@@ -31,7 +31,7 @@ function say(text, kind = "") {
 
 async function katalog() {
   try {
-    const res = await fetch(BASE + "/scripts/index.json", { cache: "no-store" });
+    const res = await fetch(chrome.runtime.getURL("scripts/index.json"));
     const data = await res.json();
     return Array.isArray(data.scripts) ? data.scripts : [];
   } catch { return []; }

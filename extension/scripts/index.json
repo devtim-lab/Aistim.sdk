@@ -1,0 +1,206 @@
+{
+  "scripts": [
+    {
+      "id": "aistim_tool",
+      "tipe": "inject",
+      "nama": "AISTIM TOOL",
+      "versi": "1.0.2",
+      "deskripsi": "Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah). Tidak aktif di halaman Koreksi SO & Pengisian Hasil SO",
+      "file": "aistim_tool.js",
+      "matches": [
+        "https://*.erzap.com/stok_opnams*"
+      ],
+      "world": "USER_SCRIPT",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "koreksiso",
+      "tipe": "inject",
+      "nama": "Auto Koreksi, Simpan, & Reload - Erzap",
+      "versi": "1.12.0",
+      "deskripsi": "[v1.12.0] Hanya lanjut otomatis kalau halaman dibuka oleh script sendiri (maks 1 menit) - buka halaman koreksi manual tidak pernah auto jalan. Ganti ID SO = mulai dari awal (isi pengkoreksi & tanggal lagi, tidak auto jalan). Halaman tanpa tombol Simpan dilewati; di akhir cek ulang semua halaman -> SO SELESAI, stop & refresh halaman. Nama Pengkoreksi & Tanggal Koreksi diisi manual sebelum START (dipakai untuk semua halaman). Alur: KOREKSI (Koreksi teratas = Hasil SO, Koreksi ke-2 dst = 0) -> SIMPAN (Enter) -> RELOAD. Tombol CEK SIMPAN: lewati halaman tanpa tombol Simpan, pindah ke halaman berikutnya yang masih ada tombol Simpan lalu langsung isi",
+      "file": "koreksiso.js",
+      "matches": [
+        "https://*.erzap.com/stok_opnams/proses_koreksi_so/*"
+      ],
+      "world": "MAIN",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "rekam",
+      "tipe": "inject",
+      "nama": "devtool",
+      "versi": "1.4.1",
+      "deskripsi": "[v1.4.1] Hasil rekaman memuat struktur halaman (tabel, filter, kata 'website'). Tombol merekam klik & request (fetch/XHR) di SEMUA halaman Erzap untuk dikirim ke developer. TERSEMBUNYI secara default: aktif hanya setelah buka halaman dengan ?rekam=1 (matikan lagi dengan ?rekam=0). Token/cookie tidak ikut direkam.",
+      "file": "rekam.js",
+      "matches": [
+        "https://*.erzap.com/*"
+      ],
+      "world": "MAIN",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "analisastok",
+      "tipe": "inject",
+      "nama": "Erzap - Analisa Stok",
+      "versi": "1.20.7",
+      "deskripsi": "v1.20.7 - fix: bacaAktifitasViaFetch (panel otomatis) sekarang panggil langsung endpoint paginasi asli (GET halaman 1, POST halaman berikutnya dengan cursor page/idproduk_harga_last/kode_transaksi_last) ketauan dari Network tab — bukan scroll-simulasi ke DOM tersembunyi yang tidak pernah trigger lazy-load-nya",
+      "file": "analisastok.js",
+      "matches": [
+        "https://*.erzap.com/produk_gudangs/lihat_stok/new*"
+      ],
+      "world": "MAIN",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "kelolaservis",
+      "tipe": "inject",
+      "nama": "Erzap - Kolom Outlet di Kelola Servis",
+      "versi": "1.0.97",
+      "deskripsi": "[v1.0.96] Hanya untuk /servis_elektroniks/index_kelola/* dan /kelola_servis/* (halaman /servis_elektroniks punya skrip sendiri: servisindex.js). Daftar Kelola Servis (tabel bawaan Erzap tidak diubah: tanpa kolom tambahan, header/lebar/ukuran huruf/scrollbar/paginasi asli): nama outlet di dalam sel Edit Penerimaan, di bawah tombol Edit (tanpa kolom Outlet), tipe HP/motor di dalam sel Pelanggan (tanpa kolom Tipe), teknisi di bawah tombol Proses Servis, nomor HP jadi ikon WhatsApp, filter teknisi (combobox + pencarian) menggantikan kotak Teknisi di panel Pencarian dan memfilter lewat server (isi nama + ID teknisi lalu tombol Filter); kalau nama tidak ada di daftar, beralih ke filter bawaan Erzap. Detail servis: tombol \"Tutup Servis\" dikunci sampai Status Servis selesai/dibatalkan dan Disetujui Oleh terisi.",
+      "file": "kelolaservis.js",
+      "matches": [
+        "https://*.erzap.com/servis_elektroniks/index_kelola/*",
+        "https://*.erzap.com/servis_elektroniks/kelola_servis/*"
+      ],
+      "world": "USER_SCRIPT",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "pemindahan",
+      "tipe": "inject",
+      "nama": "Erzap - Lihat Data Barang (Pemindahan Barang)",
+      "versi": "1.5.0",
+      "deskripsi": "Tambah tombol \"Lihat Data Barang\" di atas tabel Daftar Barang - tampilkan Barcode, Jumlah Transfer, Keterangan dari halaman ini atau dari kode/ID/link Pemindahan Barang lain, lalu bisa langsung dimasukkan (copy field) ke tabel di halaman ini. Dari/Ke Outlet & Gudang diisi dari pengaturan yang disimpan user (pertama kali pilih manual di form lalu Simpan), dicek ulang lewat konfirmasi sebelum Masukkan ke Tabel.",
+      "file": "pemindahan.js",
+      "matches": [
+        "https://*.erzap.com/pemindahan_barangs*"
+      ],
+      "world": "MAIN",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "servisindex",
+      "tipe": "inject",
+      "nama": "Erzap - Outlet dan Teknisi di Daftar Servis Elektronik",
+      "versi": "1.0.8",
+      "deskripsi": "[v1.0.8] Halaman daftar Servis Elektronik (/servis_elektroniks): nama outlet dan teknisi/mekanik (ikon kotak biru) ditampilkan di dalam sel Tanggal Terima, di bawah tanggal; tipe HP/motor (kotak biru) di sel Pelanggan, di bawah nama dan telepon. Nomor HP tetap jadi ikon WhatsApp. Datanya diambil dari halaman detail tiap servis. Tabel Erzap tidak diubah",
+      "file": "servisindex.js",
+      "matches": [
+        "https://*.erzap.com/servis_elektroniks",
+        "https://*.erzap.com/servis_elektroniks?*",
+        "https://*.erzap.com/servis_elektroniks/"
+      ],
+      "world": "USER_SCRIPT",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "pesanan_web",
+      "tipe": "inject",
+      "nama": "Erzap - Pesanan Web (Lonceng)",
+      "versi": "1.26.0",
+      "deskripsi": "Tombol lonceng melayang (FAB, bisa digeser) di halaman Erzap: daftar nota pesanan dari web (partdistro) yang nomor fakturnya berpola 1XXXXXXXXXXX-ddMMyyJJmm dan badge jumlah nota baru.",
+      "file": "pesanan_web.js",
+      "matches": [
+        "https://*.erzap.com/*"
+      ],
+      "world": "USER_SCRIPT",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "olzap",
+      "tipe": "inject",
+      "nama": "Erzap - Produk OLZAP",
+      "versi": "1.3.5",
+      "deskripsi": "Responsif mobile/desktop. Tombol di halaman daftar produk Erzap; klik -> modal, masukkan barcode -> dimasukkan ke filter tabel, dicari, hasilnya ditampilkan di modal; di bawah nama barang ada tab Lihat / Edit / Edit Nama / OLZAP (cek barcode di partdistro.com)",
+      "file": "olzap.js",
+      "matches": [
+        "https://*.erzap.com/produks*"
+      ],
+      "world": "MAIN",
+      "runAt": "document_start"
+    },
+    {
+      "id": "rekapservis",
+      "tipe": "inject",
+      "nama": "Erzap - Rekap Kelola Servis per Penerima",
+      "versi": "1.0.0",
+      "deskripsi": "[v1.0.0] Tombol \"Rekap Penerima\" di kiri badge Diterima (Daftar Kelola Servis): baca semua halaman, kelompokkan per Penerima Servis + jumlah per status, klik baris untuk lihat detail servisnya",
+      "file": "rekapservis.js",
+      "matches": [
+        "https://*.erzap.com/servis_elektroniks/*"
+      ],
+      "world": "USER_SCRIPT",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "halo",
+      "tipe": "popup",
+      "nama": "Halo Dunia",
+      "versi": "1.0.0",
+      "deskripsi": "Contoh script popup: menampilkan sapaan dan waktu.",
+      "file": "halo.js"
+    },
+    {
+      "id": "tombol_so_list",
+      "tipe": "inject",
+      "nama": "Hasil Koreksi SO - Daftar Stok Opnam",
+      "versi": "1.1.7",
+      "deskripsi": "Telusuri semua halaman Daftar Stok Opnam, filter tanggal & Gudang, lihat Jumlah SKU/Nilai/Selisih tiap SO, ekspor ke XLSX. Panel filter tanggal/gudang otomatis muat di layar HP.",
+      "file": "tombol_so_list.js",
+      "matches": [
+        "https://*.erzap.com/stok_opnams*"
+      ],
+      "world": "USER_SCRIPT",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "info",
+      "tipe": "popup",
+      "nama": "Info Browser",
+      "versi": "1.0.0",
+      "deskripsi": "Contoh script popup: menampilkan info layar dan bahasa.",
+      "file": "info.js"
+    },
+    {
+      "id": "rakstok",
+      "tipe": "inject",
+      "nama": "Lihat Stok - Kolom Rak",
+      "versi": "1.17.10",
+      "deskripsi": "Lihat Stok: kolom Rak (tulisan \"Map rak\", klik untuk popup daftar rak per toko/gudang dari Penempatan Rak), ikon logo PartDistro di kolom Nama (gambar produk baru dimuat & tampil di popup saat ikon diklik), tombol panah di kolom Harga Jual untuk melihat harga jual per pelanggan (Basic dst., diambil dari tab harga di detail produk), dan kolom Nama yang responsif (teks panjang turun ke bawah, tidak terpotong).",
+      "file": "rakstok.js",
+      "matches": [
+        "https://*.erzap.com/produk_gudangs/lihat_stok/new*",
+        "https://*.erzap.com/produks/*/edit*"
+      ],
+      "world": "USER_SCRIPT",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "rak_barang",
+      "tipe": "inject",
+      "nama": "Rak Barang - Tombol Hapus",
+      "versi": "1.2.0",
+      "deskripsi": "Tambah tombol hapus (per-baris & massal) & tambah rak massal (by range) di halaman Rak Barang",
+      "file": "rak_barang.js",
+      "matches": [
+        "https://*.erzap.com/rak_barangs*"
+      ],
+      "world": "USER_SCRIPT",
+      "runAt": "document_idle"
+    },
+    {
+      "id": "smart_repair",
+      "tipe": "inject",
+      "nama": "Smart Repair - Default Rawat Inap",
+      "versi": "1.1.0",
+      "deskripsi": "Halaman Servis Elektronik baru: \"Rawat Inap\" otomatis tercentang sebagai default, \"Quick Servis\" dinonaktifkan (tidak bisa diklik)",
+      "file": "smart_repair.js",
+      "matches": [
+        "https://*.erzap.com/servis_elektroniks/new*"
+      ],
+      "world": "USER_SCRIPT",
+      "runAt": "document_idle"
+    }
+  ]
+}

@@ -63,7 +63,8 @@ export async function clearPlan() {
 }
 
 async function fetchJson(path) {
-  const res = await fetch(BASE + path, { cache: "no-store" });
+  // Script dan katalog ada di dalam paket extension (extension/scripts/)
+  const res = await fetch(chrome.runtime.getURL(path.replace(/^\//, "")));
   if (!res.ok) throw new Error(path + " " + res.status);
   return res.json();
 }
@@ -106,7 +107,7 @@ async function syncScriptsInti() {
     if (mati.has(s.id)) continue;
     if ((await originsDibutuhkan([s])).length) { lap.lewat.push(s.id); continue; }
     try {
-      const res = await fetch(`${BASE}/scripts/${s.file}`, { cache: "no-store" });
+      const res = await fetch(chrome.runtime.getURL("scripts/" + s.file));
       if (!res.ok) throw new Error();
       const code = await res.text();
       if (code.length > MAX_CODE) throw new Error();

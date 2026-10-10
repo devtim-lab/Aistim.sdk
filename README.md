@@ -6,6 +6,13 @@ menjalankan userscript lewat `chrome.userScripts`.
 Folder `extension/` siap dimuat di `chrome://extensions` (Developer mode → Load unpacked).
 `extension/kunci.js` adalah hasil bundle modul enkripsi (dibuat dari proyek devchain).
 
+## Script
+
+Script ada di dalam paket extension: `extension/scripts/*.js` (header `// ==UserScript==` gaya Tampermonkey).
+Menambah atau mengubah script cukup edit berkas di folder itu, jalankan `node tools/build-catalog.mjs`
+(membuat `extension/scripts/index.json`), naikkan `version` di `extension/manifest.json`, lalu rilis.
+Script tidak lagi diambil dari situs devchain, jadi pembaruan script datang bersama versi extension baru.
+
 ## Rilis
 
 Buat Release otomatis dengan menaikkan `version` di `extension/manifest.json`, commit, lalu push tag:
