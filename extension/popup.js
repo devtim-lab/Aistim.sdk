@@ -1,8 +1,8 @@
-// Popup extension Aistim Tool: login dengan private key secp256k1 memakai vault.json milik situs, lalu
+// Popup extension Aistim Tool: login dengan private key secp256k1 memakai daftar akun di akun.json (ikut paket extension), lalu
 // menampilkan akses script akun. Kode script tidak dijalankan di sini
 // (Chrome melarang kode jarak jauh di extension); script dijalankan di situs.
 
-import { buatRecord, bukaRecord, masukDenganKunci, normalisasiKunci, kunciBaru, pubDari, normalisasiPub, bangunVault } from "./kunci.js";
+import { buatRecord, bukaRecord, normalisasiKunci, kunciBaru, pubDari, normalisasiPub, rapikanDaftar } from "./kunci.js";
 import { setPlan, clearPlan, getOff, setOff, getSembunyi, setSembunyi, getStatus, katalogInject, originsDibutuhkan, syncScripts, clearScripts, userScriptsReady } from "./sync.js";
 
 const BASE = "https://devchain.web.app";
@@ -272,12 +272,12 @@ function tampilkanHasil(pesan) {
 
 /** Tulis ulang vault dari daftar akun yang baru; perubahan disimpan di sesi dan siap diunduh. */
 async function terapkanDaftar(daftar, pesan) {
-  const { akun, vault } = await bangunVault(daftar);
+  const akun = rapikanDaftar(daftar);
   current.akun = akun;
   await store.set(current);
-  hasilVault = JSON.stringify(vault, null, 2) + "\n";
+  hasilVault = JSON.stringify({ version: 1, akun }, null, 2) + "\n";
   renderAkun();
-  tampilkanHasil(pesan + " Unduh vault.json, ganti devchain/vault.json di repo, lalu push.");
+  tampilkanHasil(pesan + " Unduh akun.json, ganti extension/akun.json di repo, lalu push.");
   return akun;
 }
 
@@ -367,26 +367,28 @@ async function submit(e) {
   busy = true; $("masuk").disabled = true;
   say("Memproses...", "busy");
   try {
-    let res;
+    let daftar;
     try {
-      res = await fetch(BASE + "/vault.json", { cache: "no-store" });
-      if (!res.ok) throw Object.assign(new Error("net"), { net: true });
+      const res = await fetch(chrome.runtime.getURL("akun.json"), { cache: "no-store" });
+      daftar = (await res.json()).akun;
+      if (!Array.isArray(daftar)) throw new Error("format");
     } catch { throw Object.assign(new Error("net"), { net: true }); }
-    const vault = await res.json();
-    const r = await masukDenganKunci(vault, priv);
-    if (r.status === "belum") {
+    const pub = pubDari(priv);
+    const a = daftar.find((x) => x.pub === pub);
+    if (!a) {
       say("");
-      $("pub-kamu").textContent = r.pub;
+      $("pub-kamu").textContent = pub;
       $("belum").hidden = false;
       return;
     }
+    const r = { data: { nama: a.nama, pub: a.pub, role: a.role, script: a.script || [], dibuat: a.dibuat, ...(a.role === "admin" ? { akun: daftar } : {}) } };
     const data = r.data;
     data.username = data.nama;
     await store.set(data);
     $("kunci").value = "";
     await showUser(data);
   } catch (err) {
-    say(err && err.net ? "Tidak bisa memuat daftar akun. Periksa internetmu." : "Private key tidak cocok dengan akun mana pun.", "");
+    say(err && err.net ? "Gagal membaca akun.json di paket extension." : "Gagal masuk.", "");
   } finally {
     busy = false; $("masuk").disabled = false;
   }
@@ -527,7 +529,7 @@ $("salin-pub").addEventListener("click", (e) => salinKe($("pub-kamu").textConten
 $("v-salin").addEventListener("click", (e) => salinKe(hasilVault, e.target, "Salin"));
 $("v-unduh").addEventListener("click", () => {
   const url = URL.createObjectURL(new Blob([hasilVault], { type: "application/json" }));
-  const a = el("a", { href: url, download: "vault.json" }); a.click();
+  const a = el("a", { href: url, download: "akun.json" }); a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 $("simpan-akses").addEventListener("click", async () => {

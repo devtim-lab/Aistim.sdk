@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "akun": [
+    {
+      "nama": "Admin",
+      "pub": "027426643ed4c24a7ad43aa90783e76aafdae9e297c1ae89edb08f9511df39fb55",
+      "role": "admin",
+      "script": [],
+      "dibuat": "2026-10-10T00:00:00.000Z"
+    }
+  ]
+}
