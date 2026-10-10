@@ -208,8 +208,45 @@ function renderAkun() {
   $("jumlah-akun").textContent = String(list.length);
   $("daftar-akun").replaceChildren(...list.map((a) => el("li", {},
     el("div", { className: "baris" }, el("span", { textContent: a.nama }), el("span", { textContent: a.role })),
-    el("small", { textContent: a.role === "admin" ? "Akses semua script" : ((a.script || []).length ? a.script.map(nama).join(", ") : "Belum ada akses script") }))));
+    el("small", { textContent: a.role === "admin" ? "Akses semua script" : ((a.script || []).length ? a.script.map(nama).join(", ") : "Belum ada akses script") }),
+    el("button", { type: "button", className: "kecil-btn", textContent: "Ganti key", onclick: () => bukaGanti(a) }))));
 }
+
+// ---- ganti key akun: public key (dan alamat) akun diganti, nama/role/akses tetap ----
+let gantiAkun = null, gantiKey = "";
+function gmsg(text, kind = "") { const m = $("g-msg"); m.textContent = text; m.className = "kecil " + kind; }
+function bukaGanti(a) {
+  gantiAkun = a; gantiKey = "";
+  $("g-nama").textContent = a.nama; $("g-pub").value = ""; $("g-key").hidden = true; $("g-key-isi").textContent = "";
+  gmsg(""); $("g-simpan").disabled = false;
+  $("modal-ganti").hidden = false;
+}
+const tutupGanti = () => { $("modal-ganti").hidden = true; gantiAkun = null; gantiKey = ""; $("g-key-isi").textContent = ""; $("g-pub").value = ""; };
+$("g-batal").addEventListener("click", tutupGanti);
+$("modal-ganti").addEventListener("pointerdown", (e) => { if (e.target.id === "modal-ganti") tutupGanti(); });
+$("g-buat").addEventListener("click", () => {
+  gantiKey = kunciBaru();
+  $("g-key-isi").textContent = gantiKey; $("g-key").hidden = false;
+  $("g-pub").value = pubDari(gantiKey);
+  gmsg("Key baru dibuat. Simpan private key-nya sebelum menekan Simpan.");
+});
+$("g-salin").addEventListener("click", (e) => salinKe(gantiKey, e.target, "Salin private key"));
+$("g-simpan").addEventListener("click", async () => {
+  if (!gantiAkun) return;
+  let pubBaru;
+  try { pubBaru = normalisasiPub($("g-pub").value); } catch (err) { return gmsg(err.message, "err"); }
+  if (pubBaru === gantiAkun.pub) return gmsg("Public key sama dengan yang sekarang.", "err");
+  const dirinya = gantiAkun.pub === current.pub, nama = gantiAkun.nama;
+  $("g-simpan").disabled = true;
+  try {
+    const daftar = akunList().map((x) => x.pub === gantiAkun.pub ? { ...x, pub: pubBaru } : x);
+    tutupGanti();
+    await terapkanDaftar(daftar, `Key akun "${nama}" diganti.` + (dirinya ? " Setelah upload kamu harus login lagi dengan key baru." : ""));
+  } catch (err) {
+    $("g-simpan").disabled = false;
+    gmsg(err && err.user ? err.message : "Gagal mengganti key.", "err");
+  }
+});
 
 function selectTab(name) {
   $("pane-script").hidden = name !== "script";

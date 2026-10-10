@@ -159,6 +159,25 @@
       </div>
     </section>
   </main>
+  <div id="modal-ganti" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="g-judul">
+    <div class="kotak">
+      <h2 id="g-judul">Ganti key akun</h2>
+      <p class="kecil">Akun: <strong id="g-nama"></strong></p>
+      <button id="g-buat" type="button" class="kecil-btn">Buat key baru</button>
+      <div id="g-key" hidden>
+        <p class="kecil">Private key baru. Simpan sekarang, tidak akan ditampilkan lagi:</p>
+        <pre id="g-key-isi"></pre>
+        <button id="g-salin" type="button" class="kecil-btn">Salin private key</button>
+      </div>
+      <label for="g-pub">Public key baru (66 karakter hex)</label>
+      <input id="g-pub" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="02… atau 03…" data-tempel>
+      <p id="g-msg" class="kecil" role="status"></p>
+      <div class="row">
+        <button id="g-batal" type="button">Batal</button>
+        <button id="g-simpan" type="button" class="utama">Simpan</button>
+      </div>
+    </div>
+  </div>
   <div id="modal-upload" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mu-judul">
     <div class="kotak">
       <h2 id="mu-judul">Upload perubahan akun</h2>
