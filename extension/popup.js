@@ -473,7 +473,7 @@ $("form-login").addEventListener("submit", submit);
     menu.style.left = Math.max(8, Math.min(r.left + 16, window.innerWidth - w - 8)) + "px";
     menu.style.top = Math.max(8, r.top - 50) + "px";
   };
-  for (const input of document.querySelectorAll("input[data-tempel]")) {
+  for (const input of document.querySelectorAll("[data-tempel]")) {
     input.addEventListener("contextmenu", (e) => { e.preventDefault(); buka(input); });
     input.addEventListener("pointerdown", (e) => {
       mulai = { x: e.clientX, y: e.clientY };
@@ -485,7 +485,7 @@ $("form-login").addEventListener("submit", submit);
       if (mulai && Math.hypot(e.clientX - mulai.x, e.clientY - mulai.y) > 10) clearTimeout(timer);
     });
   }
-  document.addEventListener("pointerdown", (e) => { if (!menu.hidden && !e.target.closest("#menu-tempel") && !e.target.matches("input[data-tempel]")) tutup(); });
+  document.addEventListener("pointerdown", (e) => { if (!menu.hidden && !e.target.closest("#menu-tempel") && !e.target.matches("[data-tempel]")) tutup(); });
   window.addEventListener("scroll", tutup, true);
   tombol.addEventListener("click", async () => {
     const input = target;
