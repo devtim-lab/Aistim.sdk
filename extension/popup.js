@@ -583,6 +583,21 @@ try { $("ver").textContent = "v" + chrome.runtime.getManifest().version; } catch
 let saved = await store.get();
 // Sesi lama (login PIN) tidak punya public key: minta masuk lagi dengan private key
 if (saved && !saved.pub) { await store.clear(); await clearPlan().catch(() => {}); saved = null; }
+// Segarkan sesi dari akun.json terbaru di paket (daftar akun, role, dan akses script bisa berubah sejak login)
+if (saved) {
+  try {
+    const daftar = (await (await fetch(chrome.runtime.getURL("akun.json"), { cache: "no-store" })).json()).akun;
+    const a = Array.isArray(daftar) && daftar.find((x) => x.pub === saved.pub);
+    if (Array.isArray(daftar)) {
+      if (!a) { await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); saved = null; }
+      else {
+        saved = { ...saved, nama: a.nama, username: a.nama, addr: a.addr, role: a.role, script: a.script || [] };
+        if (a.role === "admin") saved.akun = daftar; else delete saved.akun;
+        await store.set(saved);
+      }
+    }
+  } catch { /* pakai sesi tersimpan */ }
+}
 if (saved) await showUser(saved); else showLogin();
 
 // ---- salin teks yang diblok (menu salin bawaan browser sering tidak muncul di popup) ----
