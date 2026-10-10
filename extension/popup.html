@@ -71,9 +71,11 @@
 
       <div id="pane-enkripsi" hidden>
         <p class="judul">Enkripsi teks</p>
-        <label for="e-akun">Untuk akun</label>
-        <select id="e-akun"></select>
-        <label for="e-teks">Teks</label>
+        <label for="e-kunci">Private key</label>
+        <input id="e-kunci" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Tempel atau buat key baru" data-tempel>
+        <button id="e-buat-key" type="button" class="kecil-btn">Buat private key baru</button>
+        <p class="kecil">Key yang sama dipakai untuk mengenkripsi dan membuka. Simpan key ini, tanpa key teks tidak bisa dibuka.</p>
+        <label for="e-teks">Data</label>
         <textarea id="e-teks" rows="3" spellcheck="false" autocomplete="off" data-tempel></textarea>
         <button id="e-enkripsi" type="button" class="utama">Enkripsi</button>
         <textarea id="e-hasil" rows="3" readonly hidden></textarea>
@@ -82,8 +84,6 @@
         <p class="judul">Dekripsi</p>
         <label for="d-teks">Teks terenkripsi</label>
         <textarea id="d-teks" rows="3" spellcheck="false" autocomplete="off" data-tempel></textarea>
-        <label for="d-kunci">Private key akun tujuan</label>
-        <input id="d-kunci" type="password" autocomplete="off" spellcheck="false" data-tempel>
         <button id="d-dekripsi" type="button" class="utama">Dekripsi</button>
         <textarea id="d-hasil" rows="3" readonly hidden></textarea>
         <p id="e-msg" class="kecil" role="status"></p>

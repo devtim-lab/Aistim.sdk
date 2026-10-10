@@ -408,21 +408,18 @@ const PREFIX = "aistim1:";
 const b64 = (s) => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
 const unb64 = (s) => new TextDecoder().decode(Uint8Array.from(atob(s), (c) => c.charCodeAt(0)));
 function emsg(text, kind = "") { const m = $("e-msg"); m.textContent = text; m.className = "kecil " + kind; }
-function isiAkunEnkripsi() {
-  const sel = $("e-akun"), lama = sel.value;
-  sel.replaceChildren(...akunList().map((a) => el("option", { value: a.pub, textContent: a.nama + (a.role === "admin" ? " (admin)" : "") })));
-  if (lama) sel.value = lama;
-}
+function isiAkunEnkripsi() { /* key diisi sendiri; tidak ada pilihan akun */ }
+$("e-buat-key").addEventListener("click", () => { $("e-kunci").value = kunciBaru(); emsg("Key baru dibuat. Simpan sebelum menutup popup."); });
 $("e-enkripsi").addEventListener("click", async () => {
   const teks = $("e-teks").value;
   if (!teks) return emsg("Isi teks dulu.", "err");
-  if (!$("e-akun").value) return emsg("Pilih akun tujuan.", "err");
   try {
-    const rec = await buatRecord($("e-akun").value, { t: teks });
+    if (!$("e-kunci").value.trim()) $("e-kunci").value = kunciBaru();
+    const rec = await buatRecord(pubDari(normalisasiKunci($("e-kunci").value)), { t: teks });
     $("e-hasil").value = PREFIX + b64(JSON.stringify(rec));
     $("e-hasil").hidden = false; $("e-salin").hidden = false;
-    emsg("Terenkripsi. Hanya pemilik private key akun itu yang bisa membukanya.");
-  } catch { emsg("Gagal mengenkripsi.", "err"); }
+    emsg("Terenkripsi. Hanya private key di atas yang bisa membukanya.");
+  } catch (err) { emsg(err && err.user ? err.message : "Gagal mengenkripsi.", "err"); }
 });
 $("e-salin").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText($("e-hasil").value); emsg("Hasil disalin."); } catch { $("e-hasil").select(); emsg("Pilih lalu salin manual.", "err"); }
@@ -432,10 +429,9 @@ $("d-dekripsi").addEventListener("click", async () => {
   $("d-hasil").hidden = true;
   if (!raw.startsWith(PREFIX)) return emsg("Format teks tidak dikenali.", "err");
   try {
-    const kunci = normalisasiKunci($("d-kunci").value);
+    const kunci = normalisasiKunci($("e-kunci").value);
     const data = await bukaRecord(kunci, JSON.parse(unb64(raw.slice(PREFIX.length))));
     $("d-hasil").value = String(data.t ?? ""); $("d-hasil").hidden = false;
-    $("d-kunci").value = "";
     emsg("Berhasil didekripsi.");
   } catch (err) { emsg(err && err.user ? err.message : "Private key tidak cocok atau teks rusak.", "err"); }
 });
