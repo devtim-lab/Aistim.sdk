@@ -22,10 +22,9 @@
       <form id="form-login" novalidate>
         <p class="sub">Masukkan private key akunmu</p>
         <label for="kunci">Private key (64 karakter hex)</label>
-        <div class="row isi-kunci">
-          <input id="kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="0x…" aria-describedby="msg">
-          <button id="tempel-kunci" type="button" class="kecil-btn" data-target="kunci">Tempel</button>
-          <button id="lihat-kunci" type="button" class="kecil-btn" aria-pressed="false">Lihat</button>
+        <div class="input-ikon">
+          <input id="kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="0x…" aria-describedby="msg" data-tempel>
+          <button id="lihat-kunci" type="button" class="ikon-dalam" aria-label="Tampilkan private key" aria-pressed="false"><svg class="mata" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="mata-coret" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></button>
         </div>
         <p id="msg" role="status" aria-live="polite"></p>
         <div id="belum" hidden>
@@ -85,10 +84,7 @@
           <label for="t-nama">Nama</label>
           <input id="t-nama" type="text" autocomplete="off" maxlength="40" spellcheck="false">
           <label for="t-pub">Public key (66 karakter hex)</label>
-          <div class="row isi-kunci">
-            <input id="t-pub" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="02… atau 03…">
-            <button id="tempel-pub" type="button" class="kecil-btn" data-target="t-pub">Tempel</button>
-          </div>
+          <input id="t-pub" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="02… atau 03…" data-tempel>
           <button id="t-buat-key" type="button" class="kecil-btn">Buat key baru</button>
           <div id="key-baru" hidden>
             <p class="kecil">Private key akun baru. Simpan sekarang, tidak akan ditampilkan lagi:</p>
@@ -121,6 +117,7 @@
       </div>
     </section>
   </main>
+  <div id="menu-tempel" hidden><button type="button">Tempel</button></div>
   <button id="salin-pilihan" type="button" hidden>Salin teks terpilih</button>
   <script type="module" src="popup.js"></script>
 </body>

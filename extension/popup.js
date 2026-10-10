@@ -419,25 +419,58 @@ $("tambah-akun").addEventListener("click", () => {
 });
 $("form-tambah").addEventListener("submit", buatAkun);
 $("form-login").addEventListener("submit", submit);
-// Tombol Tempel: menu tempel bawaan browser sering tidak muncul di popup
-for (const t of document.querySelectorAll("button[data-target]")) {
-  t.addEventListener("click", async () => {
-    const asal = t.textContent;
+// Tekan lama pada kolom: muncul menu "Tempel" seperti di aplikasi lain
+// (menu tempel bawaan browser sering tidak muncul di popup).
+{
+  const menu = $("menu-tempel"), tombol = menu.querySelector("button");
+  let target = null, timer = null, mulai = null;
+  const tutup = () => { menu.hidden = true; target = null; };
+  const buka = (input) => {
+    target = input;
+    const r = input.getBoundingClientRect();
+    menu.hidden = false;
+    const w = menu.offsetWidth || 90;
+    menu.style.left = Math.max(8, Math.min(r.left + 16, window.innerWidth - w - 8)) + "px";
+    menu.style.top = Math.max(8, r.top - 50) + "px";
+  };
+  for (const input of document.querySelectorAll("input[data-tempel]")) {
+    input.addEventListener("contextmenu", (e) => { e.preventDefault(); buka(input); });
+    input.addEventListener("pointerdown", (e) => {
+      mulai = { x: e.clientX, y: e.clientY };
+      clearTimeout(timer);
+      timer = setTimeout(() => buka(input), 500);
+    });
+    for (const ev of ["pointerup", "pointercancel", "pointerleave"]) input.addEventListener(ev, () => clearTimeout(timer));
+    input.addEventListener("pointermove", (e) => {
+      if (mulai && Math.hypot(e.clientX - mulai.x, e.clientY - mulai.y) > 10) clearTimeout(timer);
+    });
+  }
+  document.addEventListener("pointerdown", (e) => { if (!menu.hidden && !e.target.closest("#menu-tempel") && !e.target.matches("input[data-tempel]")) tutup(); });
+  window.addEventListener("scroll", tutup, true);
+  tombol.addEventListener("click", async () => {
+    const input = target;
+    if (!input) return tutup();
     try {
       const teks = (await navigator.clipboard.readText()).trim();
       if (!teks) throw new Error("kosong");
-      $(t.dataset.target).value = teks;
-      $(t.dataset.target).dispatchEvent(new Event("input", { bubbles: true }));
-      t.textContent = "Tertempel";
-    } catch { t.textContent = "Salin dulu"; }
-    setTimeout(() => { t.textContent = asal; }, 1200);
+      input.value = teks;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      tutup();
+      input.focus();
+    } catch {
+      tombol.textContent = "Clipboard kosong";
+      setTimeout(() => { tombol.textContent = "Tempel"; tutup(); }, 1200);
+    }
   });
 }
 $("lihat-kunci").addEventListener("click", (e) => {
+  const b = e.currentTarget;
   const tampil = $("kunci").type === "password";
   $("kunci").type = tampil ? "text" : "password";
-  e.target.textContent = tampil ? "Sembunyi" : "Lihat";
-  e.target.setAttribute("aria-pressed", String(tampil));
+  b.querySelector(".mata").hidden = tampil;
+  b.querySelector(".mata-coret").hidden = !tampil;
+  b.setAttribute("aria-pressed", String(tampil));
+  b.setAttribute("aria-label", tampil ? "Sembunyikan private key" : "Tampilkan private key");
 });
 $("t-buat-key").addEventListener("click", () => {
   keBaru = kunciBaru();
