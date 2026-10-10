@@ -15,7 +15,8 @@
       "pub": "03b1a71b33b4c6a30a2c44b3fe34b4b9028036b23ff68cb9688f2c6a68de45b656",
       "role": "user",
       "script": [
-        "rekapservis",
+        "kelolaservis",
+        "servisindex",
         "smart_repair"
       ],
       "dibuat": "2026-10-10T13:52:40.803Z"
@@ -31,6 +32,16 @@
         "rakstok"
       ],
       "dibuat": "2026-10-10T13:52:40.812Z"
+    },
+    {
+      "nama": "Kadiv",
+      "addr": "0x210df2dd8affb49d6f1c947d301aa328b0f5b940",
+      "pub": "02693c08ddece726337ac72d38d82fdf3e7e1eeaa30f1b6e8319fc48e3df1d1cda",
+      "role": "user",
+      "script": [
+        "rakstok"
+      ],
+      "dibuat": "2026-10-10T17:12:17.148Z"
     }
   ]
 }

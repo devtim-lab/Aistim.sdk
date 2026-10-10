@@ -318,11 +318,12 @@ const REPO = "devtim-lab/Auth", PATH_AKUN = "akun.json", TOK_KEY = "devchain.tok
 const PUBLIK = "https://raw.githubusercontent.com/devtim-lab/Auth/main/";
 
 /** Ambil file dari repo publik Auth (terbaru); kalau gagal pakai salinan di paket extension. */
-async function ambilPublik(nama) {
+async function ambilPublik(nama, ketat = false) {
   try {
-    const r = await fetch(PUBLIK + nama + "?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(4000) });
+    const r = await fetch(PUBLIK + nama + "?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(8000) });
     if (r.ok) return await r.json();
   } catch { /* pakai salinan di paket */ }
+  if (ketat) throw new Error(nama);   // tanpa salinan paket: salinan itu bisa lebih lama dari sesi yang tersimpan
   const r = await fetch(chrome.runtime.getURL(nama), { cache: "no-store" });
   if (!r.ok) throw new Error(nama);
   return r.json();
@@ -766,7 +767,7 @@ if (saved && !saved.pub) { await store.clear(); await clearPlan().catch(() => {}
 // Segarkan sesi dari akun.json terbaru di paket (daftar akun, role, dan akses script bisa berubah sejak login)
 if (saved) {
   try {
-    const daftar = (await ambilPublik("akun.json")).akun;
+    const daftar = (await ambilPublik("akun.json", true)).akun;
     const a = Array.isArray(daftar) && daftar.find((x) => x.pub === saved.pub);
     if (Array.isArray(daftar)) {
       if (!a) { await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); saved = null; }
