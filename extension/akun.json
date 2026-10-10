@@ -29,7 +29,8 @@
       "role": "user",
       "script": [
         "pesanan_web",
-        "olzap"
+        "olzap",
+        "rakstok"
       ],
       "dibuat": "2026-10-10T13:52:40.812Z"
     }
