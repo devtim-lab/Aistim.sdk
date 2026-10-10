@@ -318,6 +318,14 @@ async function unggahAkun(isi, kunci) {
     base = await sha256(await r.text());
   } catch { throw gagalUser("Tidak bisa membaca akun.json dari GitHub."); }
   const sig = await tandatanganiAkun(priv, base, await sha256(isi));
+  const urlRuns = `https://api.github.com/repos/${REPO}/actions/workflows/update-akun.yml/runs?event=workflow_dispatch&per_page=5`;
+  const runTerakhir = async () => {
+    try {
+      const r = await fetch(urlRuns + "&t=" + Date.now(), { headers: ghHeaders(tok), cache: "no-store" });
+      return r.ok ? (await r.json()).workflow_runs || [] : [];
+    } catch { return []; }
+  };
+  const idLama = Math.max(0, ...(await runTerakhir()).map((x) => x.id));
   let p;
   try {
     p = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/update-akun.yml/dispatches`, {
@@ -328,19 +336,17 @@ async function unggahAkun(isi, kunci) {
   if (p.status === 401) throw gagalUser("Token ditolak GitHub (kedaluwarsa atau salah).");
   if (p.status === 403 || p.status === 404) throw gagalUser("Token tidak punya izin Actions (Read and write) untuk repo Auth.");
   if (p.status !== 204) throw gagalUser("GitHub menolak permintaan (" + p.status + ").");
-  // tunggu workflow selesai: file publik berubah menjadi isi baru
-  for (let i = 0; i < 20; i++) {
-    await new Promise((r) => setTimeout(r, 3000));
-    try {
-      const r = await fetch(PUBLIK + "akun.json?t=" + Date.now(), { cache: "no-store" });
-      if (r.ok && (await r.text()) === isi) return true;
-    } catch { /* coba lagi */ }
+  // tunggu workflow baru selesai (status resmi dari GitHub)
+  for (let i = 0; i < 45; i++) {
+    await new Promise((r) => setTimeout(r, 2000));
+    const run = (await runTerakhir()).find((x) => x.id > idLama);
+    if (run && run.status === "completed") return run.conclusion === "success" ? "ok" : "gagal";
   }
-  return false;
+  return "belum";
 }
 
 let konfirmasiUpload = false;
-const bukaModal = () => { $("mu-msg").textContent = ""; $("mu-kirim").textContent = "Upload"; $("mu-kirim").disabled = false; konfirmasiUpload = false; $("modal-upload").hidden = false; setTimeout(() => $("mu-kunci").focus(), 50); };
+const bukaModal = () => { $("mu-msg").textContent = ""; $("mu-kirim").textContent = "Upload"; $("mu-kirim").disabled = false; $("mu-kirim").classList.remove("memuat"); $("mu-batal").disabled = false; konfirmasiUpload = false; $("modal-upload").hidden = false; setTimeout(() => $("mu-kunci").focus(), 50); };
 const tutupModal = () => { $("modal-upload").hidden = true; $("mu-kunci").value = ""; konfirmasiUpload = false; };
 function tampilkanHasil(pesan) {
   $("hasil-vault").hidden = false;
@@ -625,8 +631,8 @@ $("salin-key").addEventListener("click", (e) => salinKe(keBaru || "", e.target, 
 $("salin-pub").addEventListener("click", (e) => salinKe($("pub-kamu").textContent, e.target, "Salin public key"));
 $("v-upload").addEventListener("click", bukaModal);
 $("mu-batal").addEventListener("click", tutupModal);
-$("modal-upload").addEventListener("pointerdown", (e) => { if (e.target.id === "modal-upload") tutupModal(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("modal-upload").hidden) tutupModal(); });
+$("modal-upload").addEventListener("pointerdown", (e) => { if (e.target.id === "modal-upload" && !$("mu-kirim").disabled) tutupModal(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("modal-upload").hidden && !$("mu-kirim").disabled) tutupModal(); });
 $("mu-kirim").addEventListener("click", async (e) => {
   const b = e.currentTarget, msg = $("mu-msg");
   if (!$("mu-kunci").value.trim()) { msg.textContent = "Isi private key admin dulu."; msg.className = "kecil err"; return; }
@@ -636,18 +642,21 @@ $("mu-kirim").addEventListener("click", async (e) => {
     setTimeout(() => { if (konfirmasiUpload && !b.disabled) { konfirmasiUpload = false; b.textContent = "Upload"; } }, 4000);
     return;
   }
-  konfirmasiUpload = false; b.disabled = true; b.textContent = "Mengupload...";
+  konfirmasiUpload = false; b.disabled = true; b.classList.add("memuat"); b.textContent = "Mengupload...";
+  $("mu-batal").disabled = true;
   msg.textContent = "Menandatangani dan mengirim. Tunggu workflow selesai...";
   try {
-    const selesai = await unggahAkun(hasilVault, $("mu-kunci").value);
+    const hasil = await unggahAkun(hasilVault, $("mu-kunci").value);
+    if (hasil === "gagal") throw gagalUser("Workflow menolak perubahan. Lihat log di tab Actions repo Auth (Update akun).");
     hasilVault = "";
     tutupModal();
     $("v-upload").hidden = true;
-    $("vmsg").textContent = selesai
+    $("vmsg").textContent = hasil === "ok"
       ? "Tersimpan di repo Auth. Pengguna menerima daftar baru saat membuka popup atau login, tanpa rilis."
-      : "Perubahan terkirim, tapi belum terlihat. Periksa tab Actions di repo Auth (workflow Update akun).";
+      : "Perubahan terkirim, tapi workflow belum selesai. Periksa tab Actions di repo Auth (Update akun).";
+    setTimeout(() => { if (!hasilVault) $("hasil-vault").hidden = true; }, 6000);
   } catch (err) {
-    b.disabled = false; b.textContent = "Upload";
+    b.disabled = false; b.classList.remove("memuat"); b.textContent = "Upload"; $("mu-batal").disabled = false;
     msg.textContent = err && err.user ? err.message : "Upload gagal."; msg.className = "kecil err";
   }
 });

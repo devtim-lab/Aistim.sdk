@@ -230,3 +230,9 @@ button.bahaya { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--
 #mu-msg { min-height: 18px; margin: 8px 0 0; } #mu-msg.err { color: var(--danger); }
 #mu-batal { padding: 13px 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
 .modal .row button { min-height: 46px; }
+
+/* animasi memuat */
+@keyframes putar { to { transform: rotate(360deg); } }
+#mu-kirim.memuat::before { content: ""; display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; border: 2px solid rgba(255,255,255,.45); border-top-color: #fff; border-radius: 50%; animation: putar .8s linear infinite; }
+#mu-kirim:disabled { opacity: .85; cursor: progress; }
+#mu-batal:disabled { opacity: .5; }
