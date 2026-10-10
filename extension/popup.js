@@ -402,16 +402,22 @@ async function unggahAkun(isi, kunci) {
   return "belum";
 }
 
-let konfirmasiUpload = false;
-const bukaModal = () => { $("mu-msg").textContent = ""; $("mu-kirim").textContent = "Upload"; $("mu-kirim").disabled = false; $("mu-kirim").classList.remove("memuat"); $("mu-batal").disabled = false; konfirmasiUpload = false; $("modal-upload").hidden = false; setTimeout(() => $("mu-kunci").focus(), 50); };
-const tutupModal = () => { $("modal-upload").hidden = true; $("mu-kunci").value = ""; konfirmasiUpload = false; };
+let konfirmasiUpload = false, dibukaPada = 0;
+const bukaModal = () => { $("mu-msg").textContent = ""; $("mu-kirim").textContent = "Upload"; $("mu-kirim").disabled = false; $("mu-kirim").classList.remove("memuat"); $("mu-batal").disabled = false; konfirmasiUpload = false; dibukaPada = Date.now(); $("modal-upload").hidden = false; setTimeout(() => $("mu-kunci").focus(), 50); };
+const tutupModal = () => {
+  $("modal-upload").hidden = true; $("mu-kunci").value = ""; konfirmasiUpload = false;
+  if (hasilVault && current && current.role === "admin") {   // dibatalkan: perubahan masih menunggu upload
+    $("hasil-vault").hidden = false; $("v-upload").hidden = false;
+    $("vmsg").textContent = "Perubahan belum diupload.";
+  }
+};
 function tampilkanHasil(pesan) {
+  const b = $("v-upload");
   $("hasil-vault").hidden = false;
   $("vmsg").textContent = pesan;
-  const b = $("v-upload");
   const admin = !!current && current.role === "admin";
   b.hidden = !admin || !hasilVault;
-  if (admin && hasilVault) bukaModal();   // langsung tampil di tengah untuk menandatangani dan upload (token dibuka otomatis bila perlu)
+  if (admin && hasilVault) { $("hasil-vault").hidden = true; bukaModal(); }   // langsung tampil di tengah untuk menandatangani dan upload (token dibuka otomatis bila perlu)
 }
 
 /** Tulis ulang vault dari daftar akun yang baru; perubahan disimpan di sesi dan siap diunduh. */
@@ -728,7 +734,7 @@ $("salin-key").addEventListener("click", (e) => salinKe(keBaru || "", e.target, 
 $("salin-pub").addEventListener("click", (e) => salinKe($("pub-kamu").textContent, e.target, "Salin public key"));
 $("v-upload").addEventListener("click", bukaModal);
 $("mu-batal").addEventListener("click", tutupModal);
-$("modal-upload").addEventListener("pointerdown", (e) => { if (e.target.id === "modal-upload" && !$("mu-kirim").disabled) tutupModal(); });
+$("modal-upload").addEventListener("pointerdown", (e) => { if (e.target.id === "modal-upload" && !$("mu-kirim").disabled && Date.now() - dibukaPada > 500) tutupModal(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("modal-upload").hidden && !$("mu-kirim").disabled) tutupModal(); });
 $("mu-kirim").addEventListener("click", async (e) => {
   const b = e.currentTarget, msg = $("mu-msg");
