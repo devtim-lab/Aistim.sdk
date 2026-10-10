@@ -8,6 +8,30 @@
       "role": "admin",
       "script": [],
       "dibuat": "2026-10-10T00:00:00.000Z"
+    },
+    {
+      "nama": "servis",
+      "addr": "0x8f17aab9028a01d3864962c457729554ab4ca1d5",
+      "pub": "03b1a71b33b4c6a30a2c44b3fe34b4b9028036b23ff68cb9688f2c6a68de45b656",
+      "role": "user",
+      "script": [
+        "kelolaservis",
+        "servisindex",
+        "rekapservis",
+        "smart_repair"
+      ],
+      "dibuat": "2026-10-10T13:52:40.803Z"
+    },
+    {
+      "nama": "penjualan",
+      "addr": "0x581ca679f109c0fc10598d4f40cae6bad124ee02",
+      "pub": "03d20071af330fc430f0e9e150ef8ad58d2bd3577a1f990ecd0badbad5a95b263e",
+      "role": "user",
+      "script": [
+        "pesanan_web",
+        "olzap"
+      ],
+      "dibuat": "2026-10-10T13:52:40.812Z"
     }
   ]
 }
