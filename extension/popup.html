@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Aistim Tool</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <img src="icons/48.png" width="32" height="32" alt="" id="logo">
+      <h1>Aistim <span>Tool</span> <small id="ver"></small></h1>
+      <button id="sync" type="button" aria-label="Sinkronkan script" title="Sinkronkan script" hidden>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
+      </button>
+      <button id="logout" type="button" aria-label="Keluar" title="Keluar" hidden>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </header>
+
+    <section id="view-login" hidden>
+      <form id="form-login" novalidate>
+        <p class="sub">Masukkan private key akunmu</p>
+        <label for="kunci">Private key (64 karakter hex)</label>
+        <input id="kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="0x…" aria-describedby="msg">
+        <p id="msg" role="status" aria-live="polite"></p>
+        <div id="belum" hidden>
+          <p class="kecil">Akun belum terdaftar. Kirim public key ini ke admin:</p>
+          <pre id="pub-kamu"></pre>
+          <button id="salin-pub" type="button" class="kecil-btn">Salin public key</button>
+        </div>
+        <button id="masuk" type="submit" class="utama">Masuk</button>
+        <p class="kecil">Private key hanya diproses di perangkat ini dan tidak disimpan atau dikirim ke mana pun.</p>
+      </form>
+    </section>
+
+    <section id="view-user" hidden>
+      <p class="sub">Masuk sebagai <strong id="who"></strong> <em id="role"></em></p>
+
+      <div id="tabs" role="tablist" hidden>
+        <button id="tab-script" type="button" role="tab" aria-selected="true">Script</button>
+        <button id="tab-akses" type="button" role="tab" aria-selected="false">Akses</button>
+        <button id="tab-akun" type="button" role="tab" aria-selected="false">Akun</button>
+      </div>
+
+      <div id="pane-script">
+        <div id="engine" class="kartu">
+          <span id="engine-dot" aria-hidden="true"></span>
+          <div><strong id="engine-judul">Engine</strong><small id="engine-info"></small></div>
+        </div>
+        <p id="engine-halaman" hidden></p>
+        <ol id="engine-help" hidden>
+          <li>Buka <b>chrome://extensions</b> lalu pilih <b>Detail</b> pada Aistim Tool.</li>
+          <li>Nyalakan <b>Izinkan skrip pengguna</b>.</li>
+          <li>Buka popup ini lagi, lalu tekan tombol sinkron.</li>
+        </ol>
+        <input id="cari-script" type="search" placeholder="Cari script..." autocomplete="off" aria-label="Cari script">
+        <ul id="manager"></ul>
+        <p id="empty" hidden>Belum ada script yang bisa kamu akses.</p>
+        <p id="pesan" role="status"></p>
+      </div>
+
+      <div id="pane-akun" hidden>
+        <p class="kecil"><span id="jumlah-akun">0</span> akun terdaftar</p>
+        <ul id="daftar-akun"></ul>
+      </div>
+
+      <div id="pane-akses" hidden>
+        <label for="akun">Akun</label>
+        <div class="row">
+          <div class="combo">
+            <input id="akun" type="text" role="combobox" autocomplete="off" spellcheck="false"
+                   placeholder="Cari akun..." aria-controls="akun-list" aria-autocomplete="list" aria-expanded="false">
+            <ul id="akun-list" role="listbox" hidden></ul>
+          </div>
+          <button id="tambah-akun" type="button" aria-label="Tambah akun" aria-expanded="false">+</button>
+        </div>
+
+        <form id="form-tambah" hidden novalidate>
+          <p class="judul">Tambah akun</p>
+          <label for="t-nama">Nama</label>
+          <input id="t-nama" type="text" autocomplete="off" maxlength="40" spellcheck="false">
+          <label for="t-pub">Public key (66 karakter hex)</label>
+          <input id="t-pub" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="02… atau 03…">
+          <button id="t-buat-key" type="button" class="kecil-btn">Buat key baru</button>
+          <div id="key-baru" hidden>
+            <p class="kecil">Private key akun baru. Simpan sekarang, tidak akan ditampilkan lagi:</p>
+            <pre id="key-baru-isi"></pre>
+            <button id="salin-key" type="button" class="kecil-btn">Salin private key</button>
+          </div>
+          <label class="inline"><input id="t-admin-role" type="checkbox"> Jadikan admin (akses semua script)</label>
+          <p class="judul">Akses script</p>
+          <div id="t-izin" class="izin"></div>
+          <button id="t-buat" type="submit" class="utama">Buat akun</button>
+          <p id="t-msg" role="status"></p>
+        </form>
+
+        <div id="terpilih" hidden>
+          <p class="judul">Akses script untuk <strong id="terpilih-nama"></strong></p>
+          <div id="izin" class="izin"></div>
+          <div id="aksi-akun" class="row" hidden>
+            <button id="simpan-akses" type="button" class="utama" hidden>Simpan akses</button>
+            <button id="hapus-akun" type="button" class="bahaya">Hapus akun</button>
+          </div>
+        </div>
+        <div id="hasil-vault" hidden>
+          <p id="vmsg" class="kecil"></p>
+          <div class="row">
+            <button id="v-unduh" type="button">Unduh vault.json</button>
+            <button id="v-salin" type="button">Salin</button>
+          </div>
+        </div>
+        <p id="akun-kosong" class="kecil" hidden>Daftar akun kosong. Buat akun lewat tombol +.</p>
+      </div>
+    </section>
+  </main>
+  <button id="salin-pilihan" type="button" hidden>Salin teks terpilih</button>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

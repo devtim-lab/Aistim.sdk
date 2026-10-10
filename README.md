@@ -1,1 +1,1 @@
-# Aistim.sdk
+# sdk-dev

@@ -1,0 +1,40 @@
+/* Sumber Tailwind. Hasil build (tailwind.css) dibuat oleh `npm run build`. */
+@import "tailwindcss" source(none);
+
+/* Hanya pindai file milik devchain */
+@source "../index.html";
+@source "../js";
+
+@theme {
+  --color-ink: #ffffff;
+  --color-card: #fff4f5;
+  --color-line: #f2c4ca;
+  --color-muted: #8c5a62;
+  --color-accent: #e5192d;
+  --color-accent-ink: #ffffff;
+  --color-danger: #b45309;
+  --color-ok: #15803d;
+}
+
+@layer base {
+  /* Sembunyikan elemen Alpine sampai siap, supaya tidak berkedip */
+  [x-cloak] { display: none !important; }
+
+  input:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+/* Tema merah: cahaya (shadow) terang di elemen beraksen */
+.bg-accent { box-shadow: 0 0 16px rgba(229, 25, 45, .55), 0 0 4px rgba(229, 25, 45, .8); }
+.border-accent { box-shadow: 0 1px 10px -2px rgba(229, 25, 45, .7); }
+input:focus-visible, button:focus-visible { box-shadow: 0 0 12px rgba(229, 25, 45, .6); }
+#logo { box-shadow: 0 0 18px rgba(229, 25, 45, .55); }

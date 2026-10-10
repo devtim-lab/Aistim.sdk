@@ -1,0 +1,26 @@
+{
+  "name": "sdk-dev",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Situs statis sdk-dev, di-deploy ke Firebase Hosting",
+  "scripts": {
+    "user": "node scripts/buat-user.mjs",
+    "build": "npm run build:catalog && npm run build:css && npm run build:vendor && npm run build:app && npm run build:ext",
+    "build:css": "tailwindcss -i devchain/css/input.css -o devchain/css/tailwind.css --minify",
+    "build:vendor": "mkdir -p devchain/js/vendor && cp node_modules/alpinejs/dist/cdn.min.js devchain/js/vendor/alpine.min.js",
+    "build:app": "esbuild devchain/js/main.js --bundle --format=esm --minify --outfile=devchain/js/vendor/app.js",
+    "build:ext": "node scripts/build-ext.mjs",
+    "build:catalog": "node scripts/build-catalog.mjs",
+    "kunci": "node scripts/kunci.mjs"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "alpinejs": "^3.17.4",
+    "esbuild": "^0.28.2",
+    "tailwindcss": "^4.3.3"
+  },
+  "dependencies": {
+    "@noble/secp256k1": "^2.2.3"
+  }
+}

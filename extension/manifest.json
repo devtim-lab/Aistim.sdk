@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "Aistim Tool",
+  "version": "3.0.0",
+  "description": "Manajer script gaya Tampermonkey untuk Erzap: login PIN, hak akses per akun, sinkron otomatis.",
+  "action": {
+    "default_title": "Aistim Tool",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "userScripts"
+  ],
+  "host_permissions": [
+    "https://devchain.web.app/*",
+    "https://*.erzap.com/*",
+    "https://partdistro.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt6s5+lWCT5psaBCaYaL+YdaE+JS+sJf1f9zqoFiIvNhzz72ybKSQa3AoDQo0bNz3nOc+vkql85zhEZL0OqQh+K57TafVCspcYS+PDp4gvQ0U3Cs5UswORKBIAKI4DUkzTvtTxXqDO7GqmNFhrbkwJ1gEdn4N7Wrg/vXk5Q1lfCAjr+vuiVlC5gsf4HHcGbw6HaRRFSc3x3Omr1dqCiCJuGmjNqNIWuc2ROD3ZxItMQUFAMtZK0Wdd9GLDjD9xXX96g/saTZRYs8g84eQVo28S/+7oUwZkhY4LxV08KloS3XSZ/B5s13TVoErNJz0RXEdNlWu6OKm/YrBmQ2ZfccAaQIDAQAB",
+  "optional_host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "minimum_chrome_version": "120",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.erzap.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ]
+}
