@@ -207,10 +207,16 @@ function renderAkun() {
   const nama = (id) => (katalogCache.find((s) => s.id === id) || { nama: id }).nama;
   const list = akunList();
   $("jumlah-akun").textContent = String(list.length);
-  $("daftar-akun").replaceChildren(...list.map((a) => el("li", {},
-    el("div", { className: "baris" }, el("span", { textContent: a.nama }), el("span", { textContent: a.role })),
-    el("small", { textContent: a.role === "admin" ? "Akses semua script" : ((a.script || []).length ? a.script.map(nama).join(", ") : "Belum ada akses script") }),
-    el("button", { type: "button", className: "kecil-btn", textContent: "Ganti key", onclick: () => bukaGanti(a) }))));
+  const ikonKunci = () => { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", "18"); s.setAttribute("height", "18"); s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "2"); s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true"); const d = document.createElementNS("http://www.w3.org/2000/svg", "path"); d.setAttribute("d", "M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"); s.append(d); return s; };
+  $("daftar-akun").replaceChildren(...list.map((a) => {
+    const btn = el("button", { type: "button", className: "ikon-btn", title: "Ganti key", onclick: () => bukaGanti(a) }, ikonKunci());
+    btn.setAttribute("aria-label", "Ganti key " + a.nama);
+    return el("li", {},
+      el("div", { className: "kiri" },
+        el("span", { className: "nama", textContent: a.nama }),
+        el("small", { textContent: a.role === "admin" ? "Akses semua script" : ((a.script || []).length ? a.script.map(nama).join(", ") : "Belum ada akses script") })),
+      el("div", { className: "kanan" }, el("span", { className: "peran", textContent: a.role }), btn));
+  }));
 }
 
 // ---- ganti key akun: public key (dan alamat) akun diganti, nama/role/akses tetap ----
