@@ -337,8 +337,8 @@ async function unggahAkun(isi, kunci) {
   if (p.status === 403 || p.status === 404) throw gagalUser("Token tidak punya izin Actions (Read and write) untuk repo Auth.");
   if (p.status !== 204) throw gagalUser("GitHub menolak permintaan (" + p.status + ").");
   // tunggu workflow baru selesai (status resmi dari GitHub)
-  for (let i = 0; i < 45; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
+  for (let i = 0; i < 90; i++) {
+    await new Promise((r) => setTimeout(r, 1000));
     const run = (await runTerakhir()).find((x) => x.id > idLama);
     if (run && run.status === "completed") return run.conclusion === "success" ? "ok" : "gagal";
   }
