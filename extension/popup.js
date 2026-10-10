@@ -2,6 +2,7 @@
 // menampilkan akses script akun. Kode script tidak dijalankan di sini
 // (Chrome melarang kode jarak jauh di extension); script dijalankan di situs.
 
+import { alamatDariPub, alamatDariTandaTangan } from "./alamat.js";
 import { buatRecord, bukaRecord, normalisasiKunci, kunciBaru, pubDari, normalisasiPub, rapikanDaftar } from "./kunci.js";
 import { setPlan, clearPlan, getOff, setOff, getSembunyi, setSembunyi, getStatus, katalogInject, originsDibutuhkan, syncScripts, clearScripts, userScriptsReady } from "./sync.js";
 
@@ -272,7 +273,7 @@ function tampilkanHasil(pesan) {
 
 /** Tulis ulang vault dari daftar akun yang baru; perubahan disimpan di sesi dan siap diunduh. */
 async function terapkanDaftar(daftar, pesan) {
-  const akun = rapikanDaftar(daftar);
+  const akun = rapikanDaftar(daftar).map((a) => ({ nama: a.nama, addr: alamatDariPub(a.pub), pub: a.pub, role: a.role, script: a.script, dibuat: a.dibuat }));
   current.akun = akun;
   await store.set(current);
   hasilVault = JSON.stringify({ version: 1, akun }, null, 2) + "\n";
@@ -373,15 +374,15 @@ async function submit(e) {
       daftar = (await res.json()).akun;
       if (!Array.isArray(daftar)) throw new Error("format");
     } catch { throw Object.assign(new Error("net"), { net: true }); }
-    const pub = pubDari(priv);
-    const a = daftar.find((x) => x.pub === pub);
+    const addr = await alamatDariTandaTangan(priv, chrome.runtime.id);   // signature hanya di memori, tidak disimpan
+    const a = daftar.find((x) => String(x.addr || "").toLowerCase() === addr);
     if (!a) {
       say("");
-      $("pub-kamu").textContent = pub;
+      $("pub-kamu").textContent = pubDari(priv);
       $("belum").hidden = false;
       return;
     }
-    const r = { data: { nama: a.nama, pub: a.pub, role: a.role, script: a.script || [], dibuat: a.dibuat, ...(a.role === "admin" ? { akun: daftar } : {}) } };
+    const r = { data: { nama: a.nama, addr: a.addr, pub: a.pub, role: a.role, script: a.script || [], dibuat: a.dibuat, ...(a.role === "admin" ? { akun: daftar } : {}) } };
     const data = r.data;
     data.username = data.nama;
     await store.set(data);
