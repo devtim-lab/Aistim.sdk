@@ -82,6 +82,7 @@ export async function ambilFile(path) {
       const r = await fetch(`https://api.github.com/repos/${REPO}/contents/extension/${rel}?ref=main`, {
         headers: { Authorization: "Bearer " + tok, Accept: "application/vnd.github.raw+json", "X-GitHub-Api-Version": "2022-11-28" },
         cache: "no-store",
+        signal: AbortSignal.timeout(4000),
       });
       if (r.ok) return r;
     } catch { /* pakai salinan di paket */ }

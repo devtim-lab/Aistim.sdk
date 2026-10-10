@@ -59,7 +59,10 @@ async function showUser(data) {
   if (admin) setupAdmin();
   await setupInject(data);
   $("view-login").hidden = true;
+  $("view-memuat").hidden = true;
   $("view-user").hidden = false;
+  // sinkron script berjalan di latar belakang (tombol sinkron berputar), tidak menahan tampilan
+  if (userScriptsReady()) jalankanSync(true).catch(() => {});
 }
 
 // ---- manajer script (gaya Tampermonkey/Aistim) ----
@@ -160,7 +163,6 @@ async function setupInject(data) {
   await cekHalaman();
   $("cari-script").value = "";
   renderEngine(); renderManager();
-  if (userScriptsReady()) await jalankanSync(true);
 }
 
 async function jalankanSync(diam = false) {
@@ -274,7 +276,7 @@ const PUBLIK = "https://raw.githubusercontent.com/devtim-lab/Auth/main/";
 /** Ambil file dari repo publik Auth (terbaru); kalau gagal pakai salinan di paket extension. */
 async function ambilPublik(nama) {
   try {
-    const r = await fetch(PUBLIK + nama + "?t=" + Date.now(), { cache: "no-store" });
+    const r = await fetch(PUBLIK + nama + "?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(4000) });
     if (r.ok) return await r.json();
   } catch { /* pakai salinan di paket */ }
   const r = await fetch(chrome.runtime.getURL(nama), { cache: "no-store" });
@@ -444,6 +446,7 @@ function showLogin() {
   $("kunci").value = ""; say("");
   $("belum").hidden = true;
   $("view-user").hidden = true;
+  $("view-memuat").hidden = true;
   $("view-login").hidden = false;
 }
 
@@ -715,7 +718,7 @@ if (saved) {
     }
   } catch { /* pakai sesi tersimpan */ }
 }
-if (saved) await showUser(saved); else showLogin();
+try { if (saved) await showUser(saved); else showLogin(); } catch { showLogin(); }
 
 // ---- salin teks yang diblok (menu salin bawaan browser sering tidak muncul di popup) ----
 {
