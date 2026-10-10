@@ -21,8 +21,8 @@ export function bacaZip(bytes) {
   return r;
 }
 
-export async function buatPaket(pubHex, zip) {
-  const raw = crypto.getRandomValues(new Uint8Array(32));
+export async function buatPaket(pubHex, zip, rawKey) {
+  const raw = rawKey || crypto.getRandomValues(new Uint8Array(32));
   const w = await buatRecord(pubHex, { k: b64(raw) });
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: strToU8(w.id) }, await aesKey(raw, "encrypt"), zip));
@@ -33,14 +33,33 @@ export async function buatPaket(pubHex, zip) {
   return out;
 }
 
-export async function bukaPaket(privHex, bytes) {
+function pisah(bytes) {
   const n = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(0);
   if (n < 2 || n > 65536 || 4 + n > bytes.length) throw new Error("paket rusak");
   const head = JSON.parse(strFromU8(bytes.subarray(4, 4 + n)));
   if (head.v !== 3) throw new Error("versi paket tidak dikenal");
-  const { k } = await bukaRecord(privHex, head.w);
-  const zip = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(head.iv), additionalData: strToU8(head.w.id) }, await aesKey(unb64(k), "decrypt"), bytes.subarray(4 + n));
-  return new Uint8Array(zip);
+  return { head, ct: bytes.subarray(4 + n) };
+}
+
+/** Ambil kunci paket (base64) dengan private key akun. Kunci ini yang disimpan agar pembaruan tidak butuh private key. */
+export async function kunciPaket(privHex, bytes) {
+  const { k } = await bukaRecord(privHex, pisah(bytes).head.w);
+  return k;
+}
+
+export async function bukaDenganKunci(kB64, bytes) {
+  const { head, ct } = pisah(bytes);
+  return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(head.iv), additionalData: strToU8(head.w.id) }, await aesKey(unb64(kB64), "decrypt"), ct));
+}
+
+export async function bukaPaket(privHex, bytes) {
+  return bukaDenganKunci(await kunciPaket(privHex, bytes), bytes);
+}
+
+/** Kunci paket tetap per akun, diturunkan dari rahasia builder, supaya pembaruan paket memakai kunci yang sama. */
+export async function turunkanKunci(seed, addr) {
+  const k = await crypto.subtle.importKey("raw", strToU8(seed), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  return new Uint8Array(await crypto.subtle.sign("HMAC", k, strToU8("aistim-paket:" + addr.toLowerCase())));
 }
 
 export async function sha256Hex(u8) {

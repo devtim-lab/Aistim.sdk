@@ -3,7 +3,7 @@
 // (Chrome melarang kode jarak jauh di extension); script dijalankan di situs.
 
 import { alamatDariPub, alamatDariTandaTangan, tandatanganiAkun } from "./alamat.js";
-import { bukaPaket, bacaZip } from "./paket.js";
+import { kunciPaket, bukaDenganKunci, bacaZip } from "./paket.js";
 import { buatRecord, bukaRecord, idDari, normalisasiKunci, kunciBaru, pubDari, normalisasiPub, rapikanDaftar } from "./kunci.js";
 import { ambilFile, getPaket, setPaket, setPlan, clearPlan, getOff, setOff, getSembunyi, setSembunyi, getStatus, katalogInject, originsDibutuhkan, syncScripts, clearScripts, userScriptsReady } from "./sync.js";
 
@@ -64,7 +64,6 @@ async function showUser(data) {
   $("view-user").hidden = false;
   // sinkron script berjalan di latar belakang (tombol sinkron berputar), tidak menahan tampilan
   if (userScriptsReady()) jalankanSync(true).catch(() => {});
-  cekPaketBaru();
 }
 
 // ---- manajer script (gaya Tampermonkey/Aistim) ----
@@ -498,20 +497,12 @@ async function muatPaket(priv, addr) {
       fetch(PUBLIK + "paket/" + a + ".bin?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(15000) }),
     ]);
     if (!r.ok) throw new Error("tidak ada paket");
-    const files = bacaZip(await bukaPaket(priv, new Uint8Array(await r.arrayBuffer())));
-    await setPaket({ ver: v[a] || "", files });
+    const bin = new Uint8Array(await r.arrayBuffer());
+    const k = await kunciPaket(priv, bin);   // yang disimpan hanya kunci paket, bukan private key
+    const files = bacaZip(await bukaDenganKunci(k, bin));
+    await setPaket({ ver: v[a] || "", k, addr: a, files });
     return true;
   } catch { return false; }
-}
-
-/** Beri tahu bila paket di repo sudah lebih baru dari yang tersimpan di browser ini. */
-async function cekPaketBaru() {
-  try {
-    const p = await getPaket();
-    if (!p || !current) return;
-    const v = await ambilPublik("paket/versi.json");
-    if (v[current.addr.toLowerCase()] && v[current.addr.toLowerCase()] !== p.ver) imsg("Ada pembaruan script. Keluar lalu masuk lagi untuk mengambilnya.", "");
-  } catch { /* abaikan */ }
 }
 
 async function submit(e) {

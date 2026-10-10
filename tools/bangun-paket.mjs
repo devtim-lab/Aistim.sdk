@@ -2,7 +2,7 @@
 // Pakai: node tools/bangun-paket.mjs <folder-auth>
 import fs from "node:fs";
 import path from "node:path";
-import { buatZip, buatPaket, sha256Hex } from "../extension/paket.js";
+import { buatZip, buatPaket, sha256Hex, turunkanKunci } from "../extension/paket.js";
 
 const auth = path.resolve(process.argv[2] || "auth");
 const sc = path.resolve("extension/scripts");
@@ -15,6 +15,8 @@ const verPath = path.join(out, "versi.json");
 let lama = {};
 try { lama = JSON.parse(fs.readFileSync(verPath, "utf8")); } catch {}
 const baru = {};
+const seed = process.env.PAKET_SEED;
+if (!seed || seed.length < 16) throw new Error("PAKET_SEED belum diisi");
 
 for (const a of akun) {
   const boleh = a.role === "admin" || !a.script?.length ? semua : semua.filter((s) => a.script.includes(s.id));
@@ -25,7 +27,7 @@ for (const a of akun) {
   const f = path.join(out, a.addr.toLowerCase() + ".bin");
   baru[a.addr.toLowerCase()] = ver;
   if (lama[a.addr.toLowerCase()] === ver && fs.existsSync(f)) { console.log(a.nama, "tidak berubah"); continue; }
-  fs.writeFileSync(f, await buatPaket(a.pub, zip));
+  fs.writeFileSync(f, await buatPaket(a.pub, zip, await turunkanKunci(seed, a.addr)));
   console.log(a.nama, boleh.length, "script,", zip.length, "byte zip ->", ver);
 }
 // hapus paket akun yang sudah tidak ada

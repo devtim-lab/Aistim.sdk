@@ -13,6 +13,7 @@ export const PLAN_KEY = "devchain.plan";
 export const OFF_KEY = "devchain.mati";
 export const HIDE_KEY = "devchain.sembunyi";
 export const STAT_KEY = "devchain.status";
+import { bukaDenganKunci, bacaZip } from "./paket.js";
 const PREFIX = "devchain-";
 const MAX_CODE = 4 * 1024 * 1024;
 const MATCH_RE = /^https?:\/\/(\*\.)?[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d+)?\/.*$/i;
@@ -132,8 +133,26 @@ export async function originsDibutuhkan(daftar) {
   return kurang;
 }
 
+/** Periksa paket terbaru di repo Auth; bila versinya berubah, unduh dan buka dengan kunci paket yang tersimpan. */
+export async function segarkanPaket() {
+  try {
+    const p = await getPaket();
+    if (!p || !p.k || !p.addr) return false;
+    const base = "https://raw.githubusercontent.com/devtim-lab/Auth/main/paket/";
+    const v = await (await fetch(base + "versi.json?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(4000) })).json();
+    const baru = v[p.addr];
+    if (!baru || baru === p.ver) return false;
+    const r = await fetch(base + p.addr + ".bin?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(15000) });
+    if (!r.ok) return false;
+    const files = bacaZip(await bukaDenganKunci(p.k, new Uint8Array(await r.arrayBuffer())));
+    await setPaket({ ...p, ver: baru, files });
+    return true;
+  } catch { return false; }
+}
+
 /** Daftarkan script yang berhak dan menyala; hapus yang sudah tidak. */
 async function syncScriptsInti() {
+  await segarkanPaket();
   const plan = await getPlan();
   const lap = { ok: [], lewat: [], hapus: [], error: "" };
   if (!plan) { await clearScripts(); return lap; }
