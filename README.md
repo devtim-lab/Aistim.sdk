@@ -8,10 +8,17 @@ Folder `extension/` siap dimuat di `chrome://extensions` (Developer mode → Loa
 
 ## Script
 
-Script ada di dalam paket extension: `extension/scripts/*.js` (header `// ==UserScript==` gaya Tampermonkey).
-Menambah atau mengubah script cukup edit berkas di folder itu, jalankan `node tools/build-catalog.mjs`
-(membuat `extension/scripts/index.json`), naikkan `version` di `extension/manifest.json`, lalu rilis.
-Script tidak lagi diambil dari situs devchain, jadi pembaruan script datang bersama versi extension baru.
+Sumber script ada di `scripts-src/` (header `// ==UserScript==` gaya Tampermonkey). Setelah push ke `main`:
+
+1. Workflow **Minify scripts** membuat versi kecil di `extension/scripts/` (lengkap dengan `index.json`).
+2. Workflow **Bangun paket script per akun** membuat satu paket terenkripsi per akun (hanya script yang boleh dipakai akun itu) dan menyimpannya di repo `Auth` (`paket/<addr>.bin`).
+3. Extension mengunduh paket akunnya saat login dan memeriksa pembaruan setiap sinkron.
+
+Jadi menambah atau mengubah script tidak perlu rilis extension baru. Jangan mengedit `extension/scripts/` langsung, karena akan ditimpa.
+
+Workflow paket butuh secret `AUTH_TOKEN` (tulis ke repo Auth) dan `PAKET_SEED` (string acak, bahan kunci paket). Setelah mengubah akses akun di `akun.json`, jalankan workflow paket sekali (Actions → Run workflow).
+
+Release (`release.yml`) membuat zip ringan tanpa folder `scripts`.
 
 ## Rilis
 
@@ -30,9 +37,3 @@ Workflow `release.yml` membuat Release berisi `aistim-tool-extension-v<versi>.zi
 `extension/akun.json` berisi daftar akun (`nama`, `addr`, `pub`, `role`, `script`). Saat login, private key menandatangani `aistim-login:<id extension>` di memori, alamat dipulihkan dari signature, lalu dicocokkan dengan `addr`. Signature dan key tidak disimpan.
 
 Membangun `extension/alamat.js` (hanya perlu bila `tools/alamat.src.mjs` berubah): pasang `@noble/secp256k1@2.2.3`, `@noble/hashes@1.8.0` dan `esbuild`, lalu `esbuild tools/alamat.src.mjs --bundle --minify --format=esm --outfile=extension/alamat.js`.
-
-## Menambah atau mengubah script
-
-Taruh atau ubah script (gaya Tampermonkey, dengan header `==UserScript==`) di **`scripts-src/`**. Setelah push ke `main`, workflow **Minify scripts** otomatis membuat versi kecil di `extension/scripts/` (yang dipakai extension) lengkap dengan `index.json`. Jangan mengedit `extension/scripts/` langsung, karena akan ditimpa.
-
-Menjalankan sendiri: `npm install esbuild` lalu `node tools/build-scripts.mjs`.

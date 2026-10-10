@@ -71,18 +71,7 @@ export async function clearPlan() {
   try { await chrome.storage.local.remove([PLAN_KEY, OFF_KEY, HIDE_KEY, STAT_KEY, PAKET_KEY]); } catch { /* di luar extension */ }
 }
 
-export const REPO = "devtim-lab/Aistim.sdk";
-export const TOK_BACA_KEY = "devchain.tokbaca";   // token baca (hanya di sesi browser)
-export const TOK_TULIS_KEY = "devchain.tok";      // token tulis, khusus admin (hanya di sesi browser)
-
-async function tokenBaca() {
-  try {
-    const o = await chrome.storage.session.get([TOK_BACA_KEY, TOK_TULIS_KEY]);
-    return o[TOK_BACA_KEY] || o[TOK_TULIS_KEY] || "";
-  } catch { return ""; }
-}
-
-/** Ambil file extension: dari repo GitHub (terbaru) bila token terbuka, kalau gagal dari salinan di paket. */
+/** Ambil file extension: dari paket akun (didekripsi saat login), kalau tidak ada dari salinan di dalam extension. */
 export async function ambilFile(path) {
   const rel = path.replace(/^\//, "");
   if (rel.startsWith("scripts/")) {
@@ -90,22 +79,11 @@ export async function ambilFile(path) {
     const t = p && p.files && p.files[rel.slice(8)];
     if (typeof t === "string") return new Response(t, { status: 200, headers: { "Content-Type": rel.endsWith(".json") ? "application/json" : "text/javascript" } });
   }
-  const tok = await tokenBaca();
-  if (tok) {
-    try {
-      const r = await fetch(`https://api.github.com/repos/${REPO}/contents/extension/${rel}?ref=main`, {
-        headers: { Authorization: "Bearer " + tok, Accept: "application/vnd.github.raw+json", "X-GitHub-Api-Version": "2022-11-28" },
-        cache: "no-store",
-        signal: AbortSignal.timeout(4000),
-      });
-      if (r.ok) return r;
-    } catch { /* pakai salinan di paket */ }
-  }
   return fetch(chrome.runtime.getURL(rel));
 }
 
 async function fetchJson(path) {
-  // Katalog dan script: GitHub (terbaru) bila token terbuka, kalau tidak dari paket extension
+  // Katalog dan script: dari paket akun, kalau tidak ada dari salinan di extension
   const res = await ambilFile(path);
   if (!res.ok) throw new Error(path + " " + res.status);
   return res.json();

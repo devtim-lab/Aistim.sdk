@@ -343,9 +343,6 @@ async function bukaTokenDari(file, priv) {
     return rec ? String((await bukaRecord(priv, rec)).t || "").trim() : "";
   } catch { return ""; }
 }
-const BACA_KEY = "devchain.tokbaca";
-async function setTokBaca(t) { try { if (t) await chrome.storage.session.set({ [BACA_KEY]: t }); else await chrome.storage.session.remove(BACA_KEY); } catch { /* abaikan */ } }
-async function getTokBaca() { try { return (await chrome.storage.session.get(BACA_KEY))[BACA_KEY] || ""; } catch { return ""; } }
 
 const sha256 = async (s) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))].map((x) => x.toString(16).padStart(2, "0")).join("");
 const gagalUser = (m) => Object.assign(new Error(m), { user: true });
@@ -536,7 +533,6 @@ async function submit(e) {
     say("Mengambil script...", "busy");
     const adaPaket = await muatPaket(priv, a.addr);
     if (!adaPaket) await setPaket(null);
-    await setTokBaca(adaPaket ? "" : await bukaTokenDari("token-baca.json", priv));   // semua akun: baca akun.json dan script dari repo
     if (a.role === "admin") await setTok(await bukaTokenDari("token.json", priv)); else await setTok("");
     const r = { data: { nama: a.nama, addr: a.addr, pub: a.pub, role: a.role, script: a.script || [], dibuat: a.dibuat, ...(a.role === "admin" ? { akun: daftar } : {}) } };
     const data = r.data;
@@ -551,7 +547,7 @@ async function submit(e) {
   }
 }
 
-$("logout").addEventListener("click", async () => { await setTok(""); await setTokBaca(""); await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); current = null; hasilVault = ""; $("logout").hidden = true; $("sync").hidden = true; showLogin(); });
+$("logout").addEventListener("click", async () => { await setTok(""); await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); current = null; hasilVault = ""; $("logout").hidden = true; $("sync").hidden = true; showLogin(); });
 $("tab-script").addEventListener("click", () => selectTab("script"));
 $("sync").addEventListener("click", () => jalankanSync(false));
 $("cari-script").addEventListener("input", renderManager);
