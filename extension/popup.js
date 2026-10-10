@@ -370,9 +370,19 @@ async function unggahAkun(isi, kunci) {
   }
   let base;
   try {
-    const r = await fetch(PUBLIK + "akun.json?t=" + Date.now(), { cache: "no-store" });
-    if (!r.ok) throw new Error();
-    base = await sha256(await r.text());
+    // Baca lewat API GitHub (langsung dari repo). raw.githubusercontent bisa tertinggal beberapa menit setelah commit,
+    // dan base yang usang membuat workflow menolak perubahan.
+    let teks = null;
+    try {
+      const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH_AKUN}?ref=main&t=${Date.now()}`, { headers: { ...ghHeaders(tok), Accept: "application/vnd.github.raw+json" }, cache: "no-store", signal: AbortSignal.timeout(8000) });
+      if (r.ok) teks = await r.text();
+    } catch { /* coba lewat raw */ }
+    if (teks === null) {
+      const r = await fetch(PUBLIK + "akun.json?t=" + Date.now(), { cache: "no-store" });
+      if (!r.ok) throw new Error();
+      teks = await r.text();
+    }
+    base = await sha256(teks);
   } catch { throw gagalUser("Tidak bisa membaca akun.json dari GitHub."); }
   const sig = await tandatanganiAkun(priv, base, await sha256(isi));
   const urlRuns = `https://api.github.com/repos/${REPO}/actions/workflows/update-akun.yml/runs?event=workflow_dispatch&per_page=5`;
