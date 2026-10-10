@@ -45,6 +45,7 @@
         <button id="tab-akses" type="button" role="tab" aria-selected="false">Akses</button>
         <button id="tab-akun" type="button" role="tab" aria-selected="false">Akun</button>
         <button id="tab-enkripsi" type="button" role="tab" aria-selected="false">Enkripsi</button>
+        <button id="tab-dekripsi" type="button" role="tab" aria-selected="false">Dekripsi</button>
       </div>
 
       <div id="pane-script">
@@ -81,12 +82,18 @@
         <textarea id="e-hasil" rows="3" readonly hidden></textarea>
         <button id="e-salin" type="button" class="kecil-btn" hidden>Salin hasil</button>
 
-        <p class="judul">Dekripsi</p>
+        <p id="e-msg" class="kecil" role="status"></p>
+      </div>
+
+      <div id="pane-dekripsi" hidden>
+        <p class="judul">Dekripsi teks</p>
+        <label for="d-kunci">Private key</label>
+        <input id="d-kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Tempel private key" data-tempel>
         <label for="d-teks">Teks terenkripsi</label>
         <textarea id="d-teks" rows="3" spellcheck="false" autocomplete="off" data-tempel></textarea>
         <button id="d-dekripsi" type="button" class="utama">Dekripsi</button>
         <textarea id="d-hasil" rows="3" readonly hidden></textarea>
-        <p id="e-msg" class="kecil" role="status"></p>
+        <p id="d-msg" class="kecil" role="status"></p>
       </div>
 
       <div id="pane-akses" hidden>

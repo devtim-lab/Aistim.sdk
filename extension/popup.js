@@ -214,6 +214,8 @@ function selectTab(name) {
   $("pane-akses").hidden = name !== "akses" || !(current && current.role === "admin");
   $("pane-akun").hidden = name !== "akun" || !(current && current.role === "admin");
   $("pane-enkripsi").hidden = name !== "enkripsi" || !(current && current.role === "admin");
+  $("pane-dekripsi").hidden = name !== "dekripsi" || !(current && current.role === "admin");
+  $("tab-dekripsi").setAttribute("aria-selected", String(name === "dekripsi"));
   $("tab-enkripsi").setAttribute("aria-selected", String(name === "enkripsi"));
   $("tab-akun").setAttribute("aria-selected", String(name === "akun"));
   $("tab-script").setAttribute("aria-selected", String(name === "script"));
@@ -401,14 +403,14 @@ $("sync").addEventListener("click", () => jalankanSync(false));
 $("cari-script").addEventListener("input", renderManager);
 $("tab-akses").addEventListener("click", () => selectTab("akses"));
 $("tab-akun").addEventListener("click", () => selectTab("akun"));
-$("tab-enkripsi").addEventListener("click", () => { isiAkunEnkripsi(); selectTab("enkripsi"); });
+$("tab-enkripsi").addEventListener("click", () => selectTab("enkripsi"));
+$("tab-dekripsi").addEventListener("click", () => selectTab("dekripsi"));
 
 // ---- tab Enkripsi (admin): enkripsi/dekripsi teks dengan public key akun ----
 const PREFIX = "aistim1:";
 const b64 = (s) => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
 const unb64 = (s) => new TextDecoder().decode(Uint8Array.from(atob(s), (c) => c.charCodeAt(0)));
-function emsg(text, kind = "") { const m = $("e-msg"); m.textContent = text; m.className = "kecil " + kind; }
-function isiAkunEnkripsi() { /* key diisi sendiri; tidak ada pilihan akun */ }
+function emsg(text, kind = "", id = "e-msg") { const m = $(id); m.textContent = text; m.className = "kecil " + kind; }
 $("e-buat-key").addEventListener("click", () => { $("e-kunci").value = kunciBaru(); emsg("Key baru dibuat. Simpan sebelum menutup popup."); });
 $("e-enkripsi").addEventListener("click", async () => {
   const teks = $("e-teks").value;
@@ -427,13 +429,13 @@ $("e-salin").addEventListener("click", async () => {
 $("d-dekripsi").addEventListener("click", async () => {
   const raw = $("d-teks").value.trim();
   $("d-hasil").hidden = true;
-  if (!raw.startsWith(PREFIX)) return emsg("Format teks tidak dikenali.", "err");
+  if (!raw.startsWith(PREFIX)) return emsg("Format teks tidak dikenali.", "err", "d-msg");
   try {
-    const kunci = normalisasiKunci($("e-kunci").value);
+    const kunci = normalisasiKunci($("d-kunci").value);
     const data = await bukaRecord(kunci, JSON.parse(unb64(raw.slice(PREFIX.length))));
     $("d-hasil").value = String(data.t ?? ""); $("d-hasil").hidden = false;
-    emsg("Berhasil didekripsi.");
-  } catch (err) { emsg(err && err.user ? err.message : "Private key tidak cocok atau teks rusak.", "err"); }
+    emsg("Berhasil didekripsi.", "", "d-msg");
+  } catch (err) { emsg(err && err.user ? err.message : "Private key tidak cocok atau teks rusak.", "err", "d-msg"); }
 });
 $("akun").addEventListener("focus", () => bukaList(true));
 $("akun").addEventListener("input", () => {

@@ -210,3 +210,11 @@ button.bahaya { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--
 #pane-enkripsi .utama { margin: 4px 0 8px; }
 #pane-enkripsi .judul { margin-top: 12px; }
 #e-msg.err { color: var(--danger); }
+
+/* 5 tab muat di layar sempit */
+#tabs { gap: 2px; }
+#tabs button { padding: 9px 4px; font-size: 13px; }
+#d-hasil { width: 100%; box-sizing: border-box; }
+#pane-dekripsi textarea, #pane-dekripsi input { width: 100%; box-sizing: border-box; }
+#pane-dekripsi textarea { font: 12px ui-monospace, monospace; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; resize: vertical; }
+#d-msg.err { color: var(--danger); }
