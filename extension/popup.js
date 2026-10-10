@@ -311,7 +311,10 @@ function tampilkanHasil(pesan) {
   $("vmsg").textContent = pesan;
   konfirmasiUpload = false;
   const b = $("v-upload"); b.textContent = "Simpan & upload ke GitHub"; b.disabled = false;
-  getTok().then((t) => { b.hidden = !t || !hasilVault; });
+  getTok().then((t) => {
+    b.hidden = !t || !hasilVault;
+    if (!t && hasilVault) $("vmsg").textContent = pesan + " Upload belum aktif: token belum terbuka. Keluar lalu masuk lagi dengan private key admin.";
+  });
 }
 
 /** Tulis ulang vault dari daftar akun yang baru; perubahan disimpan di sesi dan siap diunduh. */
