@@ -138,16 +138,25 @@
         </div>
         <div id="hasil-vault" hidden>
           <p id="vmsg" class="kecil"></p>
-          <div id="v-tanda" hidden>
-            <label for="v-kunci">Private key admin (untuk menandatangani perubahan)</label>
-            <input id="v-kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Tempel private key admin" data-tempel>
-          </div>
           <button id="v-upload" type="button" class="utama" hidden>Simpan &amp; upload ke GitHub</button>
         </div>
         <p id="akun-kosong" class="kecil" hidden>Daftar akun kosong. Buat akun lewat tombol +.</p>
       </div>
     </section>
   </main>
+  <div id="modal-upload" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mu-judul">
+    <div class="kotak">
+      <h2 id="mu-judul">Upload perubahan akun</h2>
+      <p class="kecil">Perubahan ditandatangani dengan private key admin, lalu dikirim ke GitHub.</p>
+      <label for="mu-kunci">Private key admin</label>
+      <input id="mu-kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Tempel private key admin" data-tempel>
+      <p id="mu-msg" class="kecil" role="status"></p>
+      <div class="row">
+        <button id="mu-batal" type="button">Batal</button>
+        <button id="mu-kirim" type="button" class="utama">Upload</button>
+      </div>
+    </div>
+  </div>
   <div id="menu-tempel" hidden><button type="button">Tempel</button></div>
   <button id="salin-pilihan" type="button" hidden>Salin teks terpilih</button>
   <script type="module" src="popup.js"></script>

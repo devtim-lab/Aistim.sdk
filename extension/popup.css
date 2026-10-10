@@ -218,3 +218,15 @@ button.bahaya { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--
 #pane-dekripsi textarea, #pane-dekripsi input { width: 100%; box-sizing: border-box; }
 #pane-dekripsi textarea { font: 12px ui-monospace, monospace; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; resize: vertical; }
 #d-msg.err { color: var(--danger); }
+
+/* popup upload di tengah */
+.modal { position: fixed; inset: 0; z-index: 25; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(42,14,18,.5); }
+.modal[hidden] { display: none; }
+.modal .kotak { width: 100%; max-width: 360px; box-sizing: border-box; padding: 18px; border-radius: 18px; background: #fff; border: 1px solid var(--line); box-shadow: 0 12px 40px rgba(42,14,18,.35); }
+.modal h2 { margin: 0 0 6px; font-size: 18px; }
+.modal input { width: 100%; box-sizing: border-box; }
+.modal .row { display: flex; gap: 8px; margin-top: 12px; }
+.modal .row button { flex: 1; margin: 0; }
+#mu-msg { min-height: 18px; margin: 8px 0 0; } #mu-msg.err { color: var(--danger); }
+#mu-batal { padding: 13px 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
+.modal .row button { min-height: 46px; }

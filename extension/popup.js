@@ -340,14 +340,16 @@ async function unggahAkun(isi, kunci) {
 }
 
 let konfirmasiUpload = false;
+const bukaModal = () => { $("mu-msg").textContent = ""; $("mu-kirim").textContent = "Upload"; $("mu-kirim").disabled = false; konfirmasiUpload = false; $("modal-upload").hidden = false; setTimeout(() => $("mu-kunci").focus(), 50); };
+const tutupModal = () => { $("modal-upload").hidden = true; $("mu-kunci").value = ""; konfirmasiUpload = false; };
 function tampilkanHasil(pesan) {
   $("hasil-vault").hidden = false;
   $("vmsg").textContent = pesan;
-  konfirmasiUpload = false;
-  const b = $("v-upload"); b.textContent = "Simpan & upload ke GitHub"; b.disabled = false;
+  const b = $("v-upload");
   getTok().then((t) => {
-    b.hidden = !t || !hasilVault; $("v-tanda").hidden = b.hidden;
+    b.hidden = !t || !hasilVault;
     if (!t && hasilVault) $("vmsg").textContent = pesan + " Upload belum aktif: token belum terbuka. Keluar lalu masuk lagi dengan private key admin.";
+    else if (t && hasilVault) bukaModal();   // langsung tampil di tengah untuk menandatangani dan upload
   });
 }
 
@@ -621,27 +623,32 @@ const salinKe = async (teks, tombol, normal) => {
 };
 $("salin-key").addEventListener("click", (e) => salinKe(keBaru || "", e.target, "Salin private key"));
 $("salin-pub").addEventListener("click", (e) => salinKe($("pub-kamu").textContent, e.target, "Salin public key"));
-$("v-upload").addEventListener("click", async (e) => {
-  const b = e.currentTarget;
-  if (!$("v-kunci").value.trim()) { $("vmsg").textContent = "Isi private key admin dulu untuk menandatangani perubahan."; return; }
+$("v-upload").addEventListener("click", bukaModal);
+$("mu-batal").addEventListener("click", tutupModal);
+$("modal-upload").addEventListener("pointerdown", (e) => { if (e.target.id === "modal-upload") tutupModal(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("modal-upload").hidden) tutupModal(); });
+$("mu-kirim").addEventListener("click", async (e) => {
+  const b = e.currentTarget, msg = $("mu-msg");
+  if (!$("mu-kunci").value.trim()) { msg.textContent = "Isi private key admin dulu."; msg.className = "kecil err"; return; }
+  msg.className = "kecil";
   if (!konfirmasiUpload) {
-    konfirmasiUpload = true; b.textContent = "Yakin? Tekan lagi untuk upload";
-    setTimeout(() => { if (konfirmasiUpload && !b.disabled) { konfirmasiUpload = false; b.textContent = "Simpan & upload ke GitHub"; } }, 4000);
+    konfirmasiUpload = true; b.textContent = "Yakin? Tekan lagi";
+    setTimeout(() => { if (konfirmasiUpload && !b.disabled) { konfirmasiUpload = false; b.textContent = "Upload"; } }, 4000);
     return;
   }
   konfirmasiUpload = false; b.disabled = true; b.textContent = "Mengupload...";
-  $("vmsg").textContent = "Menandatangani dan mengirim ke GitHub. Tunggu sampai workflow selesai...";
+  msg.textContent = "Menandatangani dan mengirim. Tunggu workflow selesai...";
   try {
-    const selesai = await unggahAkun(hasilVault, $("v-kunci").value);
-    $("v-kunci").value = "";
+    const selesai = await unggahAkun(hasilVault, $("mu-kunci").value);
     hasilVault = "";
-    b.hidden = true; $("v-tanda").hidden = true;
+    tutupModal();
+    $("v-upload").hidden = true;
     $("vmsg").textContent = selesai
       ? "Tersimpan di repo Auth. Pengguna menerima daftar baru saat membuka popup atau login, tanpa rilis."
       : "Perubahan terkirim, tapi belum terlihat. Periksa tab Actions di repo Auth (workflow Update akun).";
   } catch (err) {
-    b.disabled = false; b.textContent = "Simpan & upload ke GitHub";
-    $("vmsg").textContent = err && err.user ? err.message : "Upload gagal.";
+    b.disabled = false; b.textContent = "Upload";
+    msg.textContent = err && err.user ? err.message : "Upload gagal."; msg.className = "kecil err";
   }
 });
 $("simpan-akses").addEventListener("click", async () => {
