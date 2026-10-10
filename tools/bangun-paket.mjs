@@ -23,11 +23,14 @@ for (const a of akun) {
   const files = { "index.json": JSON.stringify({ scripts: boleh }) };
   for (const s of boleh) files[s.file] = fs.readFileSync(path.join(sc, s.file), "utf8");
   const zip = buatZip(files);
-  const ver = (await sha256Hex(zip)).slice(0, 16);
+  const kunci = await turunkanKunci(seed, a.addr);
+  const gabung = new Uint8Array(zip.length + kunci.length);   // versi ikut berubah bila seed berubah
+  gabung.set(zip); gabung.set(kunci, zip.length);
+  const ver = (await sha256Hex(gabung)).slice(0, 16);
   const f = path.join(out, a.addr.toLowerCase() + ".bin");
   baru[a.addr.toLowerCase()] = ver;
   if (lama[a.addr.toLowerCase()] === ver && fs.existsSync(f)) { console.log(a.nama, "tidak berubah"); continue; }
-  fs.writeFileSync(f, await buatPaket(a.pub, zip, await turunkanKunci(seed, a.addr)));
+  fs.writeFileSync(f, await buatPaket(a.pub, zip, kunci));
   console.log(a.nama, boleh.length, "script,", zip.length, "byte zip ->", ver);
 }
 // hapus paket akun yang sudah tidak ada
