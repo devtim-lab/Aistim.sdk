@@ -33,7 +33,8 @@ jobs:
       - name: Buat zip extension
         run: |
           cd extension
-          zip -qr "../aistim-tool-extension-v${VERSION}.zip" .
+          # zip ringan: tanpa script (script diambil per akun lewat paket terenkripsi saat login)
+          zip -qr "../aistim-tool-extension-v${VERSION}.zip" . -x "scripts/*"
 
       - name: Buat Release
         env:
@@ -41,6 +42,8 @@ jobs:
         run: |
           cat > catatan.md <<EOT
           Extension Chrome Aistim Tool v${VERSION}.
+
+          Zip ini hanya berisi kode extension; script diunduh otomatis saat login sesuai akun.
 
           Cara pasang manual:
           1. Unduh \`aistim-tool-extension-v${VERSION}.zip\` di bawah, lalu ekstrak ke satu folder.

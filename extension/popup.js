@@ -3,8 +3,9 @@
 // (Chrome melarang kode jarak jauh di extension); script dijalankan di situs.
 
 import { alamatDariPub, alamatDariTandaTangan, tandatanganiAkun } from "./alamat.js";
+import { bukaPaket, bacaZip } from "./paket.js";
 import { buatRecord, bukaRecord, idDari, normalisasiKunci, kunciBaru, pubDari, normalisasiPub, rapikanDaftar } from "./kunci.js";
-import { ambilFile, setPlan, clearPlan, getOff, setOff, getSembunyi, setSembunyi, getStatus, katalogInject, originsDibutuhkan, syncScripts, clearScripts, userScriptsReady } from "./sync.js";
+import { ambilFile, getPaket, setPaket, setPlan, clearPlan, getOff, setOff, getSembunyi, setSembunyi, getStatus, katalogInject, originsDibutuhkan, syncScripts, clearScripts, userScriptsReady } from "./sync.js";
 
 const BASE = "https://devchain.web.app";
 const KEY = "devchain.session";
@@ -63,6 +64,7 @@ async function showUser(data) {
   $("view-user").hidden = false;
   // sinkron script berjalan di latar belakang (tombol sinkron berputar), tidak menahan tampilan
   if (userScriptsReady()) jalankanSync(true).catch(() => {});
+  cekPaketBaru();
 }
 
 // ---- manajer script (gaya Tampermonkey/Aistim) ----
@@ -487,6 +489,31 @@ function showLogin() {
   $("view-login").hidden = false;
 }
 
+/** Unduh paket script akun ini, buka dengan private key, simpan isinya di browser. Tanpa paket → pakai cara lama. */
+async function muatPaket(priv, addr) {
+  const a = addr.toLowerCase();
+  try {
+    const [v, r] = await Promise.all([
+      ambilPublik("paket/versi.json"),
+      fetch(PUBLIK + "paket/" + a + ".bin?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(15000) }),
+    ]);
+    if (!r.ok) throw new Error("tidak ada paket");
+    const files = bacaZip(await bukaPaket(priv, new Uint8Array(await r.arrayBuffer())));
+    await setPaket({ ver: v[a] || "", files });
+    return true;
+  } catch { return false; }
+}
+
+/** Beri tahu bila paket di repo sudah lebih baru dari yang tersimpan di browser ini. */
+async function cekPaketBaru() {
+  try {
+    const p = await getPaket();
+    if (!p || !current) return;
+    const v = await ambilPublik("paket/versi.json");
+    if (v[current.addr.toLowerCase()] && v[current.addr.toLowerCase()] !== p.ver) imsg("Ada pembaruan script. Keluar lalu masuk lagi untuk mengambilnya.", "");
+  } catch { /* abaikan */ }
+}
+
 async function submit(e) {
   e.preventDefault();
   if (busy) return;
@@ -509,7 +536,10 @@ async function submit(e) {
       $("belum").hidden = false;
       return;
     }
-    await setTokBaca(await bukaTokenDari("token-baca.json", priv));   // semua akun: baca akun.json dan script dari repo
+    say("Mengambil script...", "busy");
+    const adaPaket = await muatPaket(priv, a.addr);
+    if (!adaPaket) await setPaket(null);
+    await setTokBaca(adaPaket ? "" : await bukaTokenDari("token-baca.json", priv));   // semua akun: baca akun.json dan script dari repo
     if (a.role === "admin") await setTok(await bukaTokenDari("token.json", priv)); else await setTok("");
     const r = { data: { nama: a.nama, addr: a.addr, pub: a.pub, role: a.role, script: a.script || [], dibuat: a.dibuat, ...(a.role === "admin" ? { akun: daftar } : {}) } };
     const data = r.data;

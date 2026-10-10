@@ -58,8 +58,16 @@ async function setStatus(v) {
   try { await chrome.storage.local.set({ [STAT_KEY]: v }); } catch { /* di luar extension */ }
 }
 
+export const PAKET_KEY = "devchain.paket";   // paket script akun ini (sudah didekripsi saat login): { ver, files }
+export async function getPaket() {
+  try { return (await chrome.storage.local.get(PAKET_KEY))[PAKET_KEY] || null; } catch { return null; }
+}
+export async function setPaket(v) {
+  try { await chrome.storage.local.set({ [PAKET_KEY]: v }); } catch { /* di luar extension */ }
+}
+
 export async function clearPlan() {
-  try { await chrome.storage.local.remove([PLAN_KEY, OFF_KEY, HIDE_KEY, STAT_KEY]); } catch { /* di luar extension */ }
+  try { await chrome.storage.local.remove([PLAN_KEY, OFF_KEY, HIDE_KEY, STAT_KEY, PAKET_KEY]); } catch { /* di luar extension */ }
 }
 
 export const REPO = "devtim-lab/Aistim.sdk";
@@ -76,6 +84,11 @@ async function tokenBaca() {
 /** Ambil file extension: dari repo GitHub (terbaru) bila token terbuka, kalau gagal dari salinan di paket. */
 export async function ambilFile(path) {
   const rel = path.replace(/^\//, "");
+  if (rel.startsWith("scripts/")) {
+    const p = await getPaket();
+    const t = p && p.files && p.files[rel.slice(8)];
+    if (typeof t === "string") return new Response(t, { status: 200, headers: { "Content-Type": rel.endsWith(".json") ? "application/json" : "text/javascript" } });
+  }
   const tok = await tokenBaca();
   if (tok) {
     try {
