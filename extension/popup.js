@@ -566,6 +566,23 @@ $("tab-akun").addEventListener("click", () => selectTab("akun"));
 $("tab-enkripsi").addEventListener("click", () => { isiPenerima(); selectTab("enkripsi"); });
 $("tab-dekripsi").addEventListener("click", () => selectTab("dekripsi"));
 
+// ---- popup hasil: teks hasil enkripsi/dekripsi, mudah disalin ----
+function bukaHasil(judul, teks) {
+  $("mh-judul").textContent = judul; $("mh-isi").value = teks; $("mh-msg").textContent = ""; $("mh-salin").textContent = "Salin";
+  $("modal-hasil").hidden = false;
+  $("mh-isi").focus(); $("mh-isi").select();
+}
+const tutupHasil = () => { $("modal-hasil").hidden = true; $("mh-isi").value = ""; };
+$("mh-tutup").addEventListener("click", tutupHasil);
+$("modal-hasil").addEventListener("pointerdown", (e) => { if (e.target.id === "modal-hasil") tutupHasil(); });
+$("mh-salin").addEventListener("click", async () => {
+  const t = $("mh-isi").value;
+  let ok = false;
+  try { await navigator.clipboard.writeText(t); ok = true; } catch { try { $("mh-isi").select(); ok = document.execCommand("copy"); } catch { ok = false; } }
+  $("mh-salin").textContent = ok ? "Tersalin" : "Salin";
+  $("mh-msg").textContent = ok ? "" : "Teks sudah terpilih, salin manual.";
+});
+
 // ---- tab Enkripsi (admin): enkripsi/dekripsi teks dengan public key akun ----
 const PREFIX = "aistim1:";    // satu penerima: record tunggal
 const PREFIX2 = "aistim2:";   // banyak penerima: { v:2, r:[record, ...] }
@@ -590,7 +607,7 @@ $("e-enkripsi").addEventListener("click", async () => {
     const r = [];
     for (const p of pubs) r.push(await buatRecord(p, { t: teks }));
     $("e-hasil").value = PREFIX2 + b64(JSON.stringify({ v: 2, r }));
-    $("e-hasil").hidden = false; $("e-salin").hidden = false;
+    bukaHasil("Hasil enkripsi", $("e-hasil").value);
     emsg(`Terenkripsi untuk ${r.length} penerima. Masing-masing membukanya dengan private key sendiri.`);
   } catch (err) { emsg(err && err.user ? err.message : "Gagal mengenkripsi.", "err"); }
 });
@@ -610,7 +627,7 @@ $("d-dekripsi").addEventListener("click", async () => {
     const rec = daftar.find((x) => x && x.id === id);
     if (!rec) return emsg("Teks ini bukan untuk private key tersebut.", "err", "d-msg");
     const data = await bukaRecord(kunci, rec);
-    $("d-hasil").value = String(data.t ?? ""); $("d-hasil").hidden = false;
+    $("d-hasil").value = String(data.t ?? ""); bukaHasil("Hasil dekripsi", $("d-hasil").value);
     emsg("Berhasil didekripsi.", "", "d-msg");
   } catch (err) { emsg(err && err.user ? err.message : "Private key tidak cocok atau teks rusak.", "err", "d-msg"); }
 });
