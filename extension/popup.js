@@ -2,7 +2,7 @@
 // menampilkan akses script akun. Kode script tidak dijalankan di sini
 // (Chrome melarang kode jarak jauh di extension); script dijalankan di situs.
 
-import { alamatDariPub, alamatDariTandaTangan } from "./alamat.js";
+import { alamatDariPub, alamatDariTandaTangan, tandatanganiAkun } from "./alamat.js";
 import { buatRecord, bukaRecord, idDari, normalisasiKunci, kunciBaru, pubDari, normalisasiPub, rapikanDaftar } from "./kunci.js";
 import { ambilFile, setPlan, clearPlan, getOff, setOff, getSembunyi, setSembunyi, getStatus, katalogInject, originsDibutuhkan, syncScripts, clearScripts, userScriptsReady } from "./sync.js";
 
@@ -301,23 +301,42 @@ const BACA_KEY = "devchain.tokbaca";
 async function setTokBaca(t) { try { if (t) await chrome.storage.session.set({ [BACA_KEY]: t }); else await chrome.storage.session.remove(BACA_KEY); } catch { /* abaikan */ } }
 async function getTokBaca() { try { return (await chrome.storage.session.get(BACA_KEY))[BACA_KEY] || ""; } catch { return ""; } }
 
-/** Kirim akun.json ke GitHub (commit ke main). */
-async function unggahAkun(isi, pesan) {
+const sha256 = async (s) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))].map((x) => x.toString(16).padStart(2, "0")).join("");
+const gagalUser = (m) => Object.assign(new Error(m), { user: true });
+
+/** Kirim perubahan akun.json: ditandatangani private key admin, lalu memicu workflow update-akun di repo Auth yang memverifikasi dan commit. */
+async function unggahAkun(isi, kunci) {
   const tok = await getTok();
-  if (!tok) throw Object.assign(new Error("Token belum terbuka. Keluar lalu masuk lagi sebagai admin."), { user: true });
-  const h = ghHeaders(tok);
-  let g;
-  try { g = await fetch(ghUrl + "?ref=main", { headers: h, cache: "no-store" }); }
-  catch { throw Object.assign(new Error("Tidak bisa menghubungi GitHub."), { user: true }); }
-  if (g.status === 401 || g.status === 403 || g.status === 404) throw Object.assign(new Error("Token ditolak GitHub (kedaluwarsa, atau tanpa izin tulis ke repo Auth)."), { user: true });
-  if (!g.ok) throw Object.assign(new Error("GitHub menolak permintaan (" + g.status + ")."), { user: true });
-  const { sha } = await g.json();
-  const content = btoa(String.fromCharCode(...new TextEncoder().encode(isi)));
-  const p = await fetch(ghUrl, { method: "PUT", headers: { ...h, "Content-Type": "application/json" },
-    body: JSON.stringify({ message: `akun.json: ${pesan} (oleh ${current.nama})`, content, sha, branch: "main" }) });
-  if (p.status === 409 || p.status === 422) throw Object.assign(new Error("File di GitHub berubah. Coba simpan lagi."), { user: true });
-  if (p.status === 401 || p.status === 403) throw Object.assign(new Error("Token tidak punya izin tulis ke repo Auth (Contents: Read and write)."), { user: true });
-  if (!p.ok) throw Object.assign(new Error("Upload gagal (" + p.status + ")."), { user: true });
+  if (!tok) throw gagalUser("Token belum terbuka. Keluar lalu masuk lagi sebagai admin.");
+  let priv;
+  try { priv = normalisasiKunci(kunci); } catch (err) { throw gagalUser(err.message); }
+  if (alamatDariPub(pubDari(priv)) !== String(current.addr || "").toLowerCase()) throw gagalUser("Private key itu bukan milik akun admin yang sedang masuk.");
+  let base;
+  try {
+    const r = await fetch(PUBLIK + "akun.json?t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw new Error();
+    base = await sha256(await r.text());
+  } catch { throw gagalUser("Tidak bisa membaca akun.json dari GitHub."); }
+  const sig = await tandatanganiAkun(priv, base, await sha256(isi));
+  let p;
+  try {
+    p = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/update-akun.yml/dispatches`, {
+      method: "POST", headers: { ...ghHeaders(tok), "Content-Type": "application/json" },
+      body: JSON.stringify({ ref: "main", inputs: { akun: isi, base, sig } }),
+    });
+  } catch { throw gagalUser("Tidak bisa menghubungi GitHub."); }
+  if (p.status === 401) throw gagalUser("Token ditolak GitHub (kedaluwarsa atau salah).");
+  if (p.status === 403 || p.status === 404) throw gagalUser("Token tidak punya izin Actions (Read and write) untuk repo Auth.");
+  if (p.status !== 204) throw gagalUser("GitHub menolak permintaan (" + p.status + ").");
+  // tunggu workflow selesai: file publik berubah menjadi isi baru
+  for (let i = 0; i < 20; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    try {
+      const r = await fetch(PUBLIK + "akun.json?t=" + Date.now(), { cache: "no-store" });
+      if (r.ok && (await r.text()) === isi) return true;
+    } catch { /* coba lagi */ }
+  }
+  return false;
 }
 
 let konfirmasiUpload = false;
@@ -327,7 +346,7 @@ function tampilkanHasil(pesan) {
   konfirmasiUpload = false;
   const b = $("v-upload"); b.textContent = "Simpan & upload ke GitHub"; b.disabled = false;
   getTok().then((t) => {
-    b.hidden = !t || !hasilVault;
+    b.hidden = !t || !hasilVault; $("v-tanda").hidden = b.hidden;
     if (!t && hasilVault) $("vmsg").textContent = pesan + " Upload belum aktif: token belum terbuka. Keluar lalu masuk lagi dengan private key admin.";
   });
 }
@@ -604,18 +623,22 @@ $("salin-key").addEventListener("click", (e) => salinKe(keBaru || "", e.target, 
 $("salin-pub").addEventListener("click", (e) => salinKe($("pub-kamu").textContent, e.target, "Salin public key"));
 $("v-upload").addEventListener("click", async (e) => {
   const b = e.currentTarget;
+  if (!$("v-kunci").value.trim()) { $("vmsg").textContent = "Isi private key admin dulu untuk menandatangani perubahan."; return; }
   if (!konfirmasiUpload) {
     konfirmasiUpload = true; b.textContent = "Yakin? Tekan lagi untuk upload";
     setTimeout(() => { if (konfirmasiUpload && !b.disabled) { konfirmasiUpload = false; b.textContent = "Simpan & upload ke GitHub"; } }, 4000);
     return;
   }
   konfirmasiUpload = false; b.disabled = true; b.textContent = "Mengupload...";
-  const ringkas = $("vmsg").textContent.replace(/\s*Tekan Simpan.*$/, "").trim() || "perubahan akun";
+  $("vmsg").textContent = "Menandatangani dan mengirim ke GitHub. Tunggu sampai workflow selesai...";
   try {
-    await unggahAkun(hasilVault, ringkas);
+    const selesai = await unggahAkun(hasilVault, $("v-kunci").value);
+    $("v-kunci").value = "";
     hasilVault = "";
-    b.hidden = true;
-    $("vmsg").textContent = "Tersimpan di repo Auth. Pengguna menerima daftar baru saat membuka popup atau login, tanpa rilis.";
+    b.hidden = true; $("v-tanda").hidden = true;
+    $("vmsg").textContent = selesai
+      ? "Tersimpan di repo Auth. Pengguna menerima daftar baru saat membuka popup atau login, tanpa rilis."
+      : "Perubahan terkirim, tapi belum terlihat. Periksa tab Actions di repo Auth (workflow Update akun).";
   } catch (err) {
     b.disabled = false; b.textContent = "Simpan & upload ke GitHub";
     $("vmsg").textContent = err && err.user ? err.message : "Upload gagal.";

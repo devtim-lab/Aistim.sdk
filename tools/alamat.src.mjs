@@ -20,3 +20,10 @@ export async function alamatDariTandaTangan(privHex, extId) {
   const sig = await secp.signAsync(h, unhex(privHex));
   return alamatDariPub(sig.recoverPublicKey(h).toHex(true));
 }
+
+/** Tanda tangan perubahan akun.json: kembalikan 128 hex (compact) + 2 hex (recovery). Pesan: aistim-akun:<base>:<sha256 isi baru> */
+export async function tandatanganiAkun(privHex, base, shaBaru) {
+  const h = keccak_256(enc.encode("aistim-akun:" + base + ":" + shaBaru));
+  const sig = await secp.signAsync(h, unhex(privHex));
+  return sig.toCompactHex() + sig.recovery.toString(16).padStart(2, "0");
+}
