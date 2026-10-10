@@ -23,7 +23,7 @@ jobs:
           token: ${{ secrets.AUTH_TOKEN }}
       - name: Bangun paket
         env:
-          PAKET_SEED: ${{ secrets.AUTH_TOKEN }}
+          PAKET_SEED: ${{ secrets.PAKET_SEED }}
         run: node tools/bangun-paket.mjs auth
       - name: Commit ke Auth
         working-directory: auth
