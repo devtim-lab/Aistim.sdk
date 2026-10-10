@@ -268,9 +268,50 @@ let keBaru = null;     // private key akun yang baru dibuat lewat tombol "Buat k
 
 const sendiriAkun = (a) => a.pub === current.pub;
 
+const REPO = "devtim-lab/Aistim.sdk", PATH_AKUN = "extension/akun.json", TOK_KEY = "devchain.tok";
+async function getTok() { try { return (await chrome.storage.session.get(TOK_KEY))[TOK_KEY] || ""; } catch { return ""; } }
+async function setTok(t) { try { if (t) await chrome.storage.session.set({ [TOK_KEY]: t }); else await chrome.storage.session.remove(TOK_KEY); } catch { /* abaikan */ } }
+const ghHeaders = (tok) => ({ Authorization: "Bearer " + tok, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" });
+const ghUrl = `https://api.github.com/repos/${REPO}/contents/${PATH_AKUN}`;
+
+/** Admin: buka token GitHub terenkripsi (token.json di paket) dengan private key, simpan hanya di sesi browser (hilang saat browser ditutup). */
+async function bukaTokenAdmin(priv) {
+  try {
+    const raw = String((await (await fetch(chrome.runtime.getURL("token.json"), { cache: "no-store" })).json()).token || "").trim();
+    const dua = raw.startsWith("aistim2:");
+    const obj = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(raw.slice(8)), (c) => c.charCodeAt(0))));
+    const id = await idDari(pubDari(priv));
+    const rec = (dua ? obj.r : [obj]).find((x) => x && x.id === id);
+    return rec ? String((await bukaRecord(priv, rec)).t || "").trim() : "";
+  } catch { return ""; }
+}
+
+/** Kirim akun.json ke GitHub (commit ke main). */
+async function unggahAkun(isi, pesan) {
+  const tok = await getTok();
+  if (!tok) throw Object.assign(new Error("Token belum terbuka. Keluar lalu masuk lagi sebagai admin."), { user: true });
+  const h = ghHeaders(tok);
+  let g;
+  try { g = await fetch(ghUrl + "?ref=main", { headers: h, cache: "no-store" }); }
+  catch { throw Object.assign(new Error("Tidak bisa menghubungi GitHub."), { user: true }); }
+  if (g.status === 401 || g.status === 403 || g.status === 404) throw Object.assign(new Error("Token ditolak GitHub (kedaluwarsa atau tanpa izin tulis ke repo)."), { user: true });
+  if (!g.ok) throw Object.assign(new Error("GitHub menolak permintaan (" + g.status + ")."), { user: true });
+  const { sha } = await g.json();
+  const content = btoa(String.fromCharCode(...new TextEncoder().encode(isi)));
+  const p = await fetch(ghUrl, { method: "PUT", headers: { ...h, "Content-Type": "application/json" },
+    body: JSON.stringify({ message: `akun.json: ${pesan} (oleh ${current.nama})`, content, sha, branch: "main" }) });
+  if (p.status === 409 || p.status === 422) throw Object.assign(new Error("File di GitHub berubah. Coba simpan lagi."), { user: true });
+  if (p.status === 401 || p.status === 403) throw Object.assign(new Error("Token tidak punya izin tulis (Contents: Read and write)."), { user: true });
+  if (!p.ok) throw Object.assign(new Error("Upload gagal (" + p.status + ")."), { user: true });
+}
+
+let konfirmasiUpload = false;
 function tampilkanHasil(pesan) {
   $("hasil-vault").hidden = false;
   $("vmsg").textContent = pesan;
+  konfirmasiUpload = false;
+  const b = $("v-upload"); b.textContent = "Simpan & upload ke GitHub"; b.disabled = false;
+  getTok().then((t) => { b.hidden = !t || !hasilVault; });
 }
 
 /** Tulis ulang vault dari daftar akun yang baru; perubahan disimpan di sesi dan siap diunduh. */
@@ -384,6 +425,7 @@ async function submit(e) {
       $("belum").hidden = false;
       return;
     }
+    if (a.role === "admin") await setTok(await bukaTokenAdmin(priv)); else await setTok("");
     const r = { data: { nama: a.nama, addr: a.addr, pub: a.pub, role: a.role, script: a.script || [], dibuat: a.dibuat, ...(a.role === "admin" ? { akun: daftar } : {}) } };
     const data = r.data;
     data.username = data.nama;
@@ -397,7 +439,7 @@ async function submit(e) {
   }
 }
 
-$("logout").addEventListener("click", async () => { await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); current = null; hasilVault = ""; $("logout").hidden = true; $("sync").hidden = true; showLogin(); });
+$("logout").addEventListener("click", async () => { await setTok(""); await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); current = null; hasilVault = ""; $("logout").hidden = true; $("sync").hidden = true; showLogin(); });
 $("tab-script").addEventListener("click", () => selectTab("script"));
 $("sync").addEventListener("click", () => jalankanSync(false));
 $("cari-script").addEventListener("input", renderManager);
@@ -542,6 +584,25 @@ const salinKe = async (teks, tombol, normal) => {
 };
 $("salin-key").addEventListener("click", (e) => salinKe(keBaru || "", e.target, "Salin private key"));
 $("salin-pub").addEventListener("click", (e) => salinKe($("pub-kamu").textContent, e.target, "Salin public key"));
+$("v-upload").addEventListener("click", async (e) => {
+  const b = e.currentTarget;
+  if (!konfirmasiUpload) {
+    konfirmasiUpload = true; b.textContent = "Yakin? Tekan lagi untuk upload";
+    setTimeout(() => { if (konfirmasiUpload && !b.disabled) { konfirmasiUpload = false; b.textContent = "Simpan & upload ke GitHub"; } }, 4000);
+    return;
+  }
+  konfirmasiUpload = false; b.disabled = true; b.textContent = "Mengupload...";
+  const ringkas = $("vmsg").textContent.replace(/\s*Unduh akun\.json.*$/, "").trim() || "perubahan akun";
+  try {
+    await unggahAkun(hasilVault, ringkas);
+    hasilVault = "";
+    b.hidden = true;
+    $("vmsg").textContent = "Tersimpan di GitHub (extension/akun.json). Jalankan workflow Release agar pengguna lain menerima daftar baru.";
+  } catch (err) {
+    b.disabled = false; b.textContent = "Simpan & upload ke GitHub";
+    $("vmsg").textContent = err && err.user ? err.message : "Upload gagal.";
+  }
+});
 $("v-salin").addEventListener("click", (e) => salinKe(hasilVault, e.target, "Salin"));
 $("v-unduh").addEventListener("click", () => {
   const url = URL.createObjectURL(new Blob([hasilVault], { type: "application/json" }));
@@ -586,7 +647,17 @@ if (saved && !saved.pub) { await store.clear(); await clearPlan().catch(() => {}
 // Segarkan sesi dari akun.json terbaru di paket (daftar akun, role, dan akses script bisa berubah sejak login)
 if (saved) {
   try {
-    const daftar = (await (await fetch(chrome.runtime.getURL("akun.json"), { cache: "no-store" })).json()).akun;
+    let daftar = null;
+    if (saved.role === "admin") {
+      const tok = await getTok();
+      if (tok) {
+        try {
+          const r = await fetch(ghUrl + "?ref=main", { headers: { ...ghHeaders(tok), Accept: "application/vnd.github.raw+json" }, cache: "no-store" });
+          if (r.ok) daftar = (await r.json()).akun;
+        } catch { /* pakai salinan di paket */ }
+      }
+    }
+    if (!Array.isArray(daftar)) daftar = (await (await fetch(chrome.runtime.getURL("akun.json"), { cache: "no-store" })).json()).akun;
     const a = Array.isArray(daftar) && daftar.find((x) => x.pub === saved.pub);
     if (Array.isArray(daftar)) {
       if (!a) { await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); saved = null; }
