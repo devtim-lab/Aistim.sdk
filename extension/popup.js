@@ -274,10 +274,10 @@ async function setTok(t) { try { if (t) await chrome.storage.session.set({ [TOK_
 const ghHeaders = (tok) => ({ Authorization: "Bearer " + tok, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" });
 const ghUrl = `https://api.github.com/repos/${REPO}/contents/${PATH_AKUN}`;
 
-/** Admin: buka token GitHub terenkripsi (token.json di paket) dengan private key, simpan hanya di sesi browser (hilang saat browser ditutup). */
-async function bukaTokenAdmin(priv) {
+/** Buka token GitHub terenkripsi (file di paket) dengan private key; hanya disimpan di sesi browser (hilang saat browser ditutup). */
+async function bukaTokenDari(file, priv) {
   try {
-    const raw = String((await (await fetch(chrome.runtime.getURL("token.json"), { cache: "no-store" })).json()).token || "").trim();
+    const raw = String((await (await fetch(chrome.runtime.getURL(file), { cache: "no-store" })).json()).token || "").trim();
     const dua = raw.startsWith("aistim2:");
     const obj = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(raw.slice(8)), (c) => c.charCodeAt(0))));
     const id = await idDari(pubDari(priv));
@@ -285,6 +285,9 @@ async function bukaTokenAdmin(priv) {
     return rec ? String((await bukaRecord(priv, rec)).t || "").trim() : "";
   } catch { return ""; }
 }
+const BACA_KEY = "devchain.tokbaca";
+async function setTokBaca(t) { try { if (t) await chrome.storage.session.set({ [BACA_KEY]: t }); else await chrome.storage.session.remove(BACA_KEY); } catch { /* abaikan */ } }
+async function getTokBaca() { try { return (await chrome.storage.session.get(BACA_KEY))[BACA_KEY] || ""; } catch { return ""; } }
 
 /** Kirim akun.json ke GitHub (commit ke main). */
 async function unggahAkun(isi, pesan) {
@@ -428,7 +431,8 @@ async function submit(e) {
       $("belum").hidden = false;
       return;
     }
-    if (a.role === "admin") await setTok(await bukaTokenAdmin(priv)); else await setTok("");
+    await setTokBaca(await bukaTokenDari("token-baca.json", priv));   // semua akun: baca akun.json dan script dari repo
+    if (a.role === "admin") await setTok(await bukaTokenDari("token.json", priv)); else await setTok("");
     const r = { data: { nama: a.nama, addr: a.addr, pub: a.pub, role: a.role, script: a.script || [], dibuat: a.dibuat, ...(a.role === "admin" ? { akun: daftar } : {}) } };
     const data = r.data;
     data.username = data.nama;
@@ -442,7 +446,7 @@ async function submit(e) {
   }
 }
 
-$("logout").addEventListener("click", async () => { await setTok(""); await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); current = null; hasilVault = ""; $("logout").hidden = true; $("sync").hidden = true; showLogin(); });
+$("logout").addEventListener("click", async () => { await setTok(""); await setTokBaca(""); await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); current = null; hasilVault = ""; $("logout").hidden = true; $("sync").hidden = true; showLogin(); });
 $("tab-script").addEventListener("click", () => selectTab("script"));
 $("sync").addEventListener("click", () => jalankanSync(false));
 $("cari-script").addEventListener("input", renderManager);
@@ -645,14 +649,12 @@ if (saved && !saved.pub) { await store.clear(); await clearPlan().catch(() => {}
 if (saved) {
   try {
     let daftar = null;
-    if (saved.role === "admin") {
-      const tok = await getTok();
-      if (tok) {
-        try {
-          const r = await fetch(ghUrl + "?ref=main", { headers: { ...ghHeaders(tok), Accept: "application/vnd.github.raw+json" }, cache: "no-store" });
-          if (r.ok) daftar = (await r.json()).akun;
-        } catch { /* pakai salinan di paket */ }
-      }
+    const tok = (await getTok()) || (await getTokBaca());
+    if (tok) {
+      try {
+        const r = await fetch(ghUrl + "?ref=main", { headers: { ...ghHeaders(tok), Accept: "application/vnd.github.raw+json" }, cache: "no-store" });
+        if (r.ok) daftar = (await r.json()).akun;
+      } catch { /* pakai salinan di paket */ }
     }
     if (!Array.isArray(daftar)) daftar = (await (await fetch(chrome.runtime.getURL("akun.json"), { cache: "no-store" })).json()).akun;
     const a = Array.isArray(daftar) && daftar.find((x) => x.pub === saved.pub);

@@ -62,9 +62,36 @@ export async function clearPlan() {
   try { await chrome.storage.local.remove([PLAN_KEY, OFF_KEY, HIDE_KEY, STAT_KEY]); } catch { /* di luar extension */ }
 }
 
+export const REPO = "devtim-lab/Aistim.sdk";
+export const TOK_BACA_KEY = "devchain.tokbaca";   // token baca (hanya di sesi browser)
+export const TOK_TULIS_KEY = "devchain.tok";      // token tulis, khusus admin (hanya di sesi browser)
+
+async function tokenBaca() {
+  try {
+    const o = await chrome.storage.session.get([TOK_BACA_KEY, TOK_TULIS_KEY]);
+    return o[TOK_BACA_KEY] || o[TOK_TULIS_KEY] || "";
+  } catch { return ""; }
+}
+
+/** Ambil file extension: dari repo GitHub (terbaru) bila token terbuka, kalau gagal dari salinan di paket. */
+export async function ambilFile(path) {
+  const rel = path.replace(/^\//, "");
+  const tok = await tokenBaca();
+  if (tok) {
+    try {
+      const r = await fetch(`https://api.github.com/repos/${REPO}/contents/extension/${rel}?ref=main`, {
+        headers: { Authorization: "Bearer " + tok, Accept: "application/vnd.github.raw+json", "X-GitHub-Api-Version": "2022-11-28" },
+        cache: "no-store",
+      });
+      if (r.ok) return r;
+    } catch { /* pakai salinan di paket */ }
+  }
+  return fetch(chrome.runtime.getURL(rel));
+}
+
 async function fetchJson(path) {
-  // Script dan katalog ada di dalam paket extension (extension/scripts/)
-  const res = await fetch(chrome.runtime.getURL(path.replace(/^\//, "")));
+  // Katalog dan script: GitHub (terbaru) bila token terbuka, kalau tidak dari paket extension
+  const res = await ambilFile(path);
   if (!res.ok) throw new Error(path + " " + res.status);
   return res.json();
 }
@@ -107,7 +134,7 @@ async function syncScriptsInti() {
     if (mati.has(s.id)) continue;
     if ((await originsDibutuhkan([s])).length) { lap.lewat.push(s.id); continue; }
     try {
-      const res = await fetch(chrome.runtime.getURL("scripts/" + s.file));
+      const res = await ambilFile("scripts/" + s.file);
       if (!res.ok) throw new Error();
       const code = await res.text();
       if (code.length > MAX_CODE) throw new Error();
