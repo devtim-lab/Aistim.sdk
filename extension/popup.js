@@ -359,11 +359,15 @@ const gagalUser = (m) => Object.assign(new Error(m), { user: true });
 
 /** Kirim perubahan akun.json: ditandatangani private key admin, lalu memicu workflow update-akun di repo Auth yang memverifikasi dan commit. */
 async function unggahAkun(isi, kunci) {
-  const tok = await getTok();
-  if (!tok) throw gagalUser("Token belum terbuka. Keluar lalu masuk lagi sebagai admin.");
   let priv;
   try { priv = normalisasiKunci(kunci); } catch (err) { throw gagalUser(err.message); }
   if (alamatDariPub(pubDari(priv)) !== String(current.addr || "").toLowerCase()) throw gagalUser("Private key itu bukan milik akun admin yang sedang masuk.");
+  let tok = await getTok();
+  if (!tok) {   // token hilang (mis. extension dimuat ulang): buka lagi dengan key yang sama
+    tok = await bukaTokenDari("token.json", priv);
+    if (!tok) throw gagalUser("Token tidak bisa dibuka dengan key ini.");
+    await setTok(tok);
+  }
   let base;
   try {
     const r = await fetch(PUBLIK + "akun.json?t=" + Date.now(), { cache: "no-store" });
@@ -405,11 +409,9 @@ function tampilkanHasil(pesan) {
   $("hasil-vault").hidden = false;
   $("vmsg").textContent = pesan;
   const b = $("v-upload");
-  getTok().then((t) => {
-    b.hidden = !t || !hasilVault;
-    if (!t && hasilVault) $("vmsg").textContent = pesan + " Upload belum aktif: token belum terbuka. Keluar lalu masuk lagi dengan private key admin.";
-    else if (t && hasilVault) bukaModal();   // langsung tampil di tengah untuk menandatangani dan upload
-  });
+  const admin = !!current && current.role === "admin";
+  b.hidden = !admin || !hasilVault;
+  if (admin && hasilVault) bukaModal();   // langsung tampil di tengah untuk menandatangani dan upload (token dibuka otomatis bila perlu)
 }
 
 /** Tulis ulang vault dari daftar akun yang baru; perubahan disimpan di sesi dan siap diunduh. */
