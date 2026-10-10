@@ -44,6 +44,7 @@
         <button id="tab-script" type="button" role="tab" aria-selected="true">Script</button>
         <button id="tab-akses" type="button" role="tab" aria-selected="false">Akses</button>
         <button id="tab-akun" type="button" role="tab" aria-selected="false">Akun</button>
+        <button id="tab-enkripsi" type="button" role="tab" aria-selected="false">Enkripsi</button>
       </div>
 
       <div id="pane-script">
@@ -66,6 +67,26 @@
       <div id="pane-akun" hidden>
         <p class="kecil"><span id="jumlah-akun">0</span> akun terdaftar</p>
         <ul id="daftar-akun"></ul>
+      </div>
+
+      <div id="pane-enkripsi" hidden>
+        <p class="judul">Enkripsi teks</p>
+        <label for="e-akun">Untuk akun</label>
+        <select id="e-akun"></select>
+        <label for="e-teks">Teks</label>
+        <textarea id="e-teks" rows="3" spellcheck="false" autocomplete="off"></textarea>
+        <button id="e-enkripsi" type="button" class="utama">Enkripsi</button>
+        <textarea id="e-hasil" rows="3" readonly hidden></textarea>
+        <button id="e-salin" type="button" class="kecil-btn" hidden>Salin hasil</button>
+
+        <p class="judul">Dekripsi</p>
+        <label for="d-teks">Teks terenkripsi</label>
+        <textarea id="d-teks" rows="3" spellcheck="false" autocomplete="off"></textarea>
+        <label for="d-kunci">Private key akun tujuan</label>
+        <input id="d-kunci" type="password" autocomplete="off" spellcheck="false" data-tempel>
+        <button id="d-dekripsi" type="button" class="utama">Dekripsi</button>
+        <textarea id="d-hasil" rows="3" readonly hidden></textarea>
+        <p id="e-msg" class="kecil" role="status"></p>
       </div>
 
       <div id="pane-akses" hidden>

@@ -203,3 +203,10 @@ button.bahaya { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--
 #menu-tempel[hidden] { display: none; }
 #menu-tempel button { padding: 10px 18px; border: 0; border-radius: 8px; background: none; color: #fff; font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
 #menu-tempel button:hover { background: rgba(255,255,255,.12); }
+
+/* tab Enkripsi */
+#pane-enkripsi select, #pane-enkripsi textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: inherit; resize: vertical; }
+#pane-enkripsi textarea { font-family: ui-monospace, monospace; font-size: 12px; margin-bottom: 8px; }
+#pane-enkripsi .utama { margin: 4px 0 8px; }
+#pane-enkripsi .judul { margin-top: 12px; }
+#e-msg.err { color: var(--danger); }

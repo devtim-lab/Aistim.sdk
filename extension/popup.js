@@ -2,7 +2,7 @@
 // menampilkan akses script akun. Kode script tidak dijalankan di sini
 // (Chrome melarang kode jarak jauh di extension); script dijalankan di situs.
 
-import { masukDenganKunci, normalisasiKunci, kunciBaru, pubDari, normalisasiPub, bangunVault } from "./kunci.js";
+import { buatRecord, bukaRecord, masukDenganKunci, normalisasiKunci, kunciBaru, pubDari, normalisasiPub, bangunVault } from "./kunci.js";
 import { setPlan, clearPlan, getOff, setOff, getSembunyi, setSembunyi, getStatus, katalogInject, originsDibutuhkan, syncScripts, clearScripts, userScriptsReady } from "./sync.js";
 
 const BASE = "https://devchain.web.app";
@@ -212,6 +212,8 @@ function selectTab(name) {
   $("pane-script").hidden = name !== "script";
   $("pane-akses").hidden = name !== "akses" || !(current && current.role === "admin");
   $("pane-akun").hidden = name !== "akun" || !(current && current.role === "admin");
+  $("pane-enkripsi").hidden = name !== "enkripsi" || !(current && current.role === "admin");
+  $("tab-enkripsi").setAttribute("aria-selected", String(name === "enkripsi"));
   $("tab-akun").setAttribute("aria-selected", String(name === "akun"));
   $("tab-script").setAttribute("aria-selected", String(name === "script"));
   $("tab-akses").setAttribute("aria-selected", String(name === "akses"));
@@ -396,6 +398,44 @@ $("sync").addEventListener("click", () => jalankanSync(false));
 $("cari-script").addEventListener("input", renderManager);
 $("tab-akses").addEventListener("click", () => selectTab("akses"));
 $("tab-akun").addEventListener("click", () => selectTab("akun"));
+$("tab-enkripsi").addEventListener("click", () => { isiAkunEnkripsi(); selectTab("enkripsi"); });
+
+// ---- tab Enkripsi (admin): enkripsi/dekripsi teks dengan public key akun ----
+const PREFIX = "aistim1:";
+const b64 = (s) => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+const unb64 = (s) => new TextDecoder().decode(Uint8Array.from(atob(s), (c) => c.charCodeAt(0)));
+function emsg(text, kind = "") { const m = $("e-msg"); m.textContent = text; m.className = "kecil " + kind; }
+function isiAkunEnkripsi() {
+  const sel = $("e-akun"), lama = sel.value;
+  sel.replaceChildren(...akunList().map((a) => el("option", { value: a.pub, textContent: a.nama + (a.role === "admin" ? " (admin)" : "") })));
+  if (lama) sel.value = lama;
+}
+$("e-enkripsi").addEventListener("click", async () => {
+  const teks = $("e-teks").value;
+  if (!teks) return emsg("Isi teks dulu.", "err");
+  if (!$("e-akun").value) return emsg("Pilih akun tujuan.", "err");
+  try {
+    const rec = await buatRecord($("e-akun").value, { t: teks });
+    $("e-hasil").value = PREFIX + b64(JSON.stringify(rec));
+    $("e-hasil").hidden = false; $("e-salin").hidden = false;
+    emsg("Terenkripsi. Hanya pemilik private key akun itu yang bisa membukanya.");
+  } catch { emsg("Gagal mengenkripsi.", "err"); }
+});
+$("e-salin").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("e-hasil").value); emsg("Hasil disalin."); } catch { $("e-hasil").select(); emsg("Pilih lalu salin manual.", "err"); }
+});
+$("d-dekripsi").addEventListener("click", async () => {
+  const raw = $("d-teks").value.trim();
+  $("d-hasil").hidden = true;
+  if (!raw.startsWith(PREFIX)) return emsg("Format teks tidak dikenali.", "err");
+  try {
+    const kunci = normalisasiKunci($("d-kunci").value);
+    const data = await bukaRecord(kunci, JSON.parse(unb64(raw.slice(PREFIX.length))));
+    $("d-hasil").value = String(data.t ?? ""); $("d-hasil").hidden = false;
+    $("d-kunci").value = "";
+    emsg("Berhasil didekripsi.");
+  } catch (err) { emsg(err && err.user ? err.message : "Private key tidak cocok atau teks rusak.", "err"); }
+});
 $("akun").addEventListener("focus", () => bukaList(true));
 $("akun").addEventListener("input", () => {
   // Kolom dikosongkan atau diubah: sembunyikan daftar script akun sebelumnya
