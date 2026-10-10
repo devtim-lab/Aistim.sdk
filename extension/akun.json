@@ -15,8 +15,6 @@
       "pub": "03b1a71b33b4c6a30a2c44b3fe34b4b9028036b23ff68cb9688f2c6a68de45b656",
       "role": "user",
       "script": [
-        "kelolaservis",
-        "servisindex",
         "rekapservis",
         "smart_repair"
       ],
