@@ -77,14 +77,14 @@
 
       <div id="pane-enkripsi" hidden>
         <p class="judul">Enkripsi teks</p>
+        <label for="e-teks">Data</label>
+        <textarea id="e-teks" rows="3" spellcheck="false" autocomplete="off" data-tempel></textarea>
         <label for="e-kunci">Private key (opsional, ikut jadi penerima)</label>
         <input id="e-kunci" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Tempel atau buat key baru" data-tempel>
         <button id="e-buat-key" type="button" class="kecil-btn">Buat private key baru</button>
         <p class="kecil">Setiap penerima membuka teks dengan private key miliknya sendiri. Kolom kosong dan tanpa penerima: key baru dibuat otomatis.</p>
         <p class="judul">Penerima lain</p>
         <div id="e-penerima" class="izin"></div>
-        <label for="e-teks">Data</label>
-        <textarea id="e-teks" rows="3" spellcheck="false" autocomplete="off" data-tempel></textarea>
         <button id="e-enkripsi" type="button" class="utama">Enkripsi</button>
         <textarea id="e-hasil" rows="3" readonly hidden></textarea>
         <button id="e-salin" type="button" class="kecil-btn" hidden>Salin hasil</button>

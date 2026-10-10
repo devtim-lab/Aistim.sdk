@@ -272,3 +272,4 @@ pre#g-key-isi { margin: 6px 0; padding: 8px; background: var(--card); border: 1p
 
 #modal-ganti .judul { margin: 12px 0 4px; }
 #modal-ganti input[type=text] { margin-bottom: 2px; }
+#pane-enkripsi #e-penerima { max-height: 150px; overflow-y: auto; overscroll-behavior: contain; margin-bottom: 10px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 10px; }
