@@ -34,6 +34,6 @@ Workflow `release.yml` membuat Release berisi `aistim-tool-extension-v<versi>.zi
 
 ## Akun dan login
 
-`extension/akun.json` berisi daftar akun (`nama`, `addr`, `pub`, `role`, `script`). Saat login, private key menandatangani `aistim-login:kfgpijjlmocfnlmkjfaecllloniellmp` (ID tetap, tidak bergantung ID extension yang terpasang) di memori, alamat dipulihkan dari signature, lalu dicocokkan dengan `addr`. Signature dan key tidak disimpan.
+`extension/akun.json` berisi daftar akun (`nama`, `addr`, `pub`, `role`, `script`). Saat login, private key menandatangani `aistim-login:jmgenkikiinjmkjebhgbgilfjgifnbbl` (ID tetap, tidak bergantung ID extension yang terpasang) di memori, alamat dipulihkan dari signature, lalu dicocokkan dengan `addr`. Signature dan key tidak disimpan.
 
 Membangun `extension/alamat.js` (hanya perlu bila `tools/alamat.src.mjs` berubah): pasang `@noble/secp256k1@2.2.3`, `@noble/hashes@1.8.0` dan `esbuild`, lalu `esbuild tools/alamat.src.mjs --bundle --minify --format=esm --outfile=extension/alamat.js`.

@@ -536,9 +536,9 @@ async function muatPaket(priv, addr) {
   } catch { return false; }
 }
 
-// ID tetap untuk tanda tangan login (sama dengan ID extension saat ini). Dengan begini alamat akun tidak berubah
+// ID tetap untuk tanda tangan login (ID tetap). Dengan begini alamat akun tidak berubah
 // walau extension dipasang dari Web Store, zip, atau punya ID lain. Tanda tangan tidak disimpan atau dikirim ke mana pun.
-const ID_LOGIN = "kfgpijjlmocfnlmkjfaecllloniellmp";
+const ID_LOGIN = "jmgenkikiinjmkjebhgbgilfjgifnbbl";
 
 async function submit(e) {
   e.preventDefault();
