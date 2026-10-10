@@ -269,3 +269,6 @@ pre#g-key-isi { margin: 6px 0; padding: 8px; background: var(--card); border: 1p
 #g-batal { padding: 13px 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
 #g-msg { min-height: 18px; margin: 8px 0 0; } #g-msg.err { color: var(--danger); }
 #modal-ganti label { margin: 10px 0 3px; }
+
+#modal-ganti .judul { margin: 12px 0 4px; }
+#modal-ganti input[type=text] { margin-bottom: 2px; }

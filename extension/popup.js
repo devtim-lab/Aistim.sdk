@@ -209,8 +209,8 @@ function renderAkun() {
   $("jumlah-akun").textContent = String(list.length);
   const ikonKunci = () => { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", "18"); s.setAttribute("height", "18"); s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "2"); s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true"); const d = document.createElementNS("http://www.w3.org/2000/svg", "path"); d.setAttribute("d", "M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"); s.append(d); return s; };
   $("daftar-akun").replaceChildren(...list.map((a) => {
-    const btn = el("button", { type: "button", className: "ikon-btn", title: "Ganti key", onclick: () => bukaGanti(a) }, ikonKunci());
-    btn.setAttribute("aria-label", "Ganti key " + a.nama);
+    const btn = el("button", { type: "button", className: "ikon-btn", title: "Ubah akun / ganti key", onclick: () => bukaGanti(a) }, ikonKunci());
+    btn.setAttribute("aria-label", "Ubah akun " + a.nama);
     return el("li", {},
       el("div", { className: "kiri" },
         el("span", { className: "nama", textContent: a.nama }),
@@ -224,7 +224,7 @@ let gantiAkun = null, gantiKey = "";
 function gmsg(text, kind = "") { const m = $("g-msg"); m.textContent = text; m.className = "kecil " + kind; }
 function bukaGanti(a) {
   gantiAkun = a; gantiKey = "";
-  $("g-nama").textContent = a.nama; $("g-pub").value = ""; $("g-key").hidden = true; $("g-key-isi").textContent = "";
+  $("g-nama").value = a.nama; $("g-pub").value = ""; $("g-key").hidden = true; $("g-key-isi").textContent = "";
   gmsg(""); $("g-simpan").disabled = false;
   $("modal-ganti").hidden = false;
 }
@@ -240,18 +240,27 @@ $("g-buat").addEventListener("click", () => {
 $("g-salin").addEventListener("click", (e) => salinKe(gantiKey, e.target, "Salin private key"));
 $("g-simpan").addEventListener("click", async () => {
   if (!gantiAkun) return;
-  let pubBaru;
-  try { pubBaru = normalisasiPub($("g-pub").value); } catch (err) { return gmsg(err.message, "err"); }
-  if (pubBaru === gantiAkun.pub) return gmsg("Public key sama dengan yang sekarang.", "err");
-  const dirinya = gantiAkun.pub === current.pub, nama = gantiAkun.nama;
+  const namaBaru = $("g-nama").value.trim();
+  if (!namaBaru || namaBaru.length > 40) return gmsg("Nama 1–40 karakter.", "err");
+  if (akunList().some((x) => x.pub !== gantiAkun.pub && x.nama.toLowerCase() === namaBaru.toLowerCase())) return gmsg("Nama sudah dipakai akun lain.", "err");
+  let pubBaru = gantiAkun.pub;
+  if ($("g-pub").value.trim()) {
+    try { pubBaru = normalisasiPub($("g-pub").value); } catch (err) { return gmsg(err.message, "err"); }
+    if (akunList().some((x) => x.pub !== gantiAkun.pub && x.pub === pubBaru)) return gmsg("Public key itu sudah dipakai akun lain.", "err");
+  }
+  const gantiNama = namaBaru !== gantiAkun.nama, gantiPub = pubBaru !== gantiAkun.pub;
+  if (!gantiNama && !gantiPub) return gmsg("Tidak ada yang diubah.", "err");
+  const dirinya = gantiAkun.pub === current.pub, lama = gantiAkun.nama;
   $("g-simpan").disabled = true;
   try {
-    const daftar = akunList().map((x) => x.pub === gantiAkun.pub ? { ...x, pub: pubBaru } : x);
+    const daftar = akunList().map((x) => x.pub === gantiAkun.pub ? { ...x, nama: namaBaru, pub: pubBaru } : x);
     tutupGanti();
-    await terapkanDaftar(daftar, `Key akun "${nama}" diganti.` + (dirinya ? " Setelah upload kamu harus login lagi dengan key baru." : ""));
+    const info = [gantiNama ? `nama jadi "${namaBaru}"` : "", gantiPub ? "key diganti" : ""].filter(Boolean).join(", ");
+    await terapkanDaftar(daftar, `Akun "${lama}": ${info}.` + (dirinya && gantiPub ? " Setelah upload kamu harus login lagi dengan key baru." : ""));
+    if (dirinya && gantiNama) { current.nama = namaBaru; current.username = namaBaru; await store.set(current); $("who").textContent = namaBaru; }
   } catch (err) {
     $("g-simpan").disabled = false;
-    gmsg(err && err.user ? err.message : "Gagal mengganti key.", "err");
+    gmsg(err && err.user ? err.message : "Gagal mengubah akun.", "err");
   }
 });
 
