@@ -419,6 +419,26 @@ $("tambah-akun").addEventListener("click", () => {
 });
 $("form-tambah").addEventListener("submit", buatAkun);
 $("form-login").addEventListener("submit", submit);
+// Tombol Tempel: menu tempel bawaan browser sering tidak muncul di popup
+for (const t of document.querySelectorAll("button[data-target]")) {
+  t.addEventListener("click", async () => {
+    const asal = t.textContent;
+    try {
+      const teks = (await navigator.clipboard.readText()).trim();
+      if (!teks) throw new Error("kosong");
+      $(t.dataset.target).value = teks;
+      $(t.dataset.target).dispatchEvent(new Event("input", { bubbles: true }));
+      t.textContent = "Tertempel";
+    } catch { t.textContent = "Salin dulu"; }
+    setTimeout(() => { t.textContent = asal; }, 1200);
+  });
+}
+$("lihat-kunci").addEventListener("click", (e) => {
+  const tampil = $("kunci").type === "password";
+  $("kunci").type = tampil ? "text" : "password";
+  e.target.textContent = tampil ? "Sembunyi" : "Lihat";
+  e.target.setAttribute("aria-pressed", String(tampil));
+});
 $("t-buat-key").addEventListener("click", () => {
   keBaru = kunciBaru();
   $("t-pub").value = pubDari(keBaru);

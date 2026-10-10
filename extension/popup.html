@@ -22,7 +22,11 @@
       <form id="form-login" novalidate>
         <p class="sub">Masukkan private key akunmu</p>
         <label for="kunci">Private key (64 karakter hex)</label>
-        <input id="kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="0x…" aria-describedby="msg">
+        <div class="row isi-kunci">
+          <input id="kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="0x…" aria-describedby="msg">
+          <button id="tempel-kunci" type="button" class="kecil-btn" data-target="kunci">Tempel</button>
+          <button id="lihat-kunci" type="button" class="kecil-btn" aria-pressed="false">Lihat</button>
+        </div>
         <p id="msg" role="status" aria-live="polite"></p>
         <div id="belum" hidden>
           <p class="kecil">Akun belum terdaftar. Kirim public key ini ke admin:</p>
@@ -81,7 +85,10 @@
           <label for="t-nama">Nama</label>
           <input id="t-nama" type="text" autocomplete="off" maxlength="40" spellcheck="false">
           <label for="t-pub">Public key (66 karakter hex)</label>
-          <input id="t-pub" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="02… atau 03…">
+          <div class="row isi-kunci">
+            <input id="t-pub" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="02… atau 03…">
+            <button id="tempel-pub" type="button" class="kecil-btn" data-target="t-pub">Tempel</button>
+          </div>
           <button id="t-buat-key" type="button" class="kecil-btn">Buat key baru</button>
           <div id="key-baru" hidden>
             <p class="kecil">Private key akun baru. Simpan sekarang, tidak akan ditampilkan lagi:</p>
