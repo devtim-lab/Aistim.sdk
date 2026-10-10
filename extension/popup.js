@@ -536,6 +536,10 @@ async function muatPaket(priv, addr) {
   } catch { return false; }
 }
 
+// ID tetap untuk tanda tangan login (sama dengan ID extension saat ini). Dengan begini alamat akun tidak berubah
+// walau extension dipasang dari Web Store, zip, atau punya ID lain. Tanda tangan tidak disimpan atau dikirim ke mana pun.
+const ID_LOGIN = "kfgpijjlmocfnlmkjfaecllloniellmp";
+
 async function submit(e) {
   e.preventDefault();
   if (busy) return;
@@ -550,7 +554,7 @@ async function submit(e) {
       daftar = (await ambilPublik("akun.json")).akun;
       if (!Array.isArray(daftar)) throw new Error("format");
     } catch { throw Object.assign(new Error("net"), { net: true }); }
-    const addr = await alamatDariTandaTangan(priv, chrome.runtime.id);   // signature hanya di memori, tidak disimpan
+    const addr = await alamatDariTandaTangan(priv, ID_LOGIN);   // signature hanya di memori, tidak disimpan
     const a = daftar.find((x) => String(x.addr || "").toLowerCase() === addr);
     if (!a) {
       say("");
