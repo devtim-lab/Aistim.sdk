@@ -324,7 +324,7 @@ async function terapkanDaftar(daftar, pesan) {
   await store.set(current);
   hasilVault = JSON.stringify({ version: 1, akun }, null, 2) + "\n";
   renderAkun();
-  tampilkanHasil(pesan + " Unduh akun.json, ganti extension/akun.json di repo, lalu push.");
+  tampilkanHasil(pesan + " Tekan Simpan & upload untuk mengirim ke GitHub.");
   return akun;
 }
 
@@ -595,7 +595,7 @@ $("v-upload").addEventListener("click", async (e) => {
     return;
   }
   konfirmasiUpload = false; b.disabled = true; b.textContent = "Mengupload...";
-  const ringkas = $("vmsg").textContent.replace(/\s*Unduh akun\.json.*$/, "").trim() || "perubahan akun";
+  const ringkas = $("vmsg").textContent.replace(/\s*Tekan Simpan.*$/, "").trim() || "perubahan akun";
   try {
     await unggahAkun(hasilVault, ringkas);
     hasilVault = "";
@@ -605,12 +605,6 @@ $("v-upload").addEventListener("click", async (e) => {
     b.disabled = false; b.textContent = "Simpan & upload ke GitHub";
     $("vmsg").textContent = err && err.user ? err.message : "Upload gagal.";
   }
-});
-$("v-salin").addEventListener("click", (e) => salinKe(hasilVault, e.target, "Salin"));
-$("v-unduh").addEventListener("click", () => {
-  const url = URL.createObjectURL(new Blob([hasilVault], { type: "application/json" }));
-  const a = el("a", { href: url, download: "akun.json" }); a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 $("simpan-akses").addEventListener("click", async () => {
   if (!terpilih) return;
