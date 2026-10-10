@@ -3,7 +3,7 @@
 // (Chrome melarang kode jarak jauh di extension); script dijalankan di situs.
 
 import { alamatDariPub, alamatDariTandaTangan } from "./alamat.js";
-import { buatRecord, bukaRecord, normalisasiKunci, kunciBaru, pubDari, normalisasiPub, rapikanDaftar } from "./kunci.js";
+import { buatRecord, bukaRecord, idDari, normalisasiKunci, kunciBaru, pubDari, normalisasiPub, rapikanDaftar } from "./kunci.js";
 import { setPlan, clearPlan, getOff, setOff, getSembunyi, setSembunyi, getStatus, katalogInject, originsDibutuhkan, syncScripts, clearScripts, userScriptsReady } from "./sync.js";
 
 const BASE = "https://devchain.web.app";
@@ -403,24 +403,35 @@ $("sync").addEventListener("click", () => jalankanSync(false));
 $("cari-script").addEventListener("input", renderManager);
 $("tab-akses").addEventListener("click", () => selectTab("akses"));
 $("tab-akun").addEventListener("click", () => selectTab("akun"));
-$("tab-enkripsi").addEventListener("click", () => selectTab("enkripsi"));
+$("tab-enkripsi").addEventListener("click", () => { isiPenerima(); selectTab("enkripsi"); });
 $("tab-dekripsi").addEventListener("click", () => selectTab("dekripsi"));
 
 // ---- tab Enkripsi (admin): enkripsi/dekripsi teks dengan public key akun ----
-const PREFIX = "aistim1:";
+const PREFIX = "aistim1:";    // satu penerima: record tunggal
+const PREFIX2 = "aistim2:";   // banyak penerima: { v:2, r:[record, ...] }
 const b64 = (s) => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
 const unb64 = (s) => new TextDecoder().decode(Uint8Array.from(atob(s), (c) => c.charCodeAt(0)));
 function emsg(text, kind = "", id = "e-msg") { const m = $(id); m.textContent = text; m.className = "kecil " + kind; }
+function isiPenerima() {
+  const dicentang = new Set([...$("e-penerima").querySelectorAll("input:checked")].map((i) => i.value));
+  const list = akunList();
+  $("e-penerima").replaceChildren(...(list.length ? list.map((a) => el("label", {},
+    el("input", { type: "checkbox", value: a.pub, checked: dicentang.has(a.pub) }),
+    el("span", { textContent: a.nama + (a.pub === current?.pub ? " (kamu)" : "") }))) : [el("small", { textContent: "Belum ada akun." })]));
+}
 $("e-buat-key").addEventListener("click", () => { $("e-kunci").value = kunciBaru(); emsg("Key baru dibuat. Simpan sebelum menutup popup."); });
 $("e-enkripsi").addEventListener("click", async () => {
   const teks = $("e-teks").value;
   if (!teks) return emsg("Isi teks dulu.", "err");
   try {
-    if (!$("e-kunci").value.trim()) $("e-kunci").value = kunciBaru();
-    const rec = await buatRecord(pubDari(normalisasiKunci($("e-kunci").value)), { t: teks });
-    $("e-hasil").value = PREFIX + b64(JSON.stringify(rec));
+    const pubs = new Set([...$("e-penerima").querySelectorAll("input:checked")].map((i) => i.value));
+    if ($("e-kunci").value.trim()) pubs.add(pubDari(normalisasiKunci($("e-kunci").value)));
+    if (!pubs.size) { $("e-kunci").value = kunciBaru(); pubs.add(pubDari($("e-kunci").value)); }
+    const r = [];
+    for (const p of pubs) r.push(await buatRecord(p, { t: teks }));
+    $("e-hasil").value = PREFIX2 + b64(JSON.stringify({ v: 2, r }));
     $("e-hasil").hidden = false; $("e-salin").hidden = false;
-    emsg("Terenkripsi. Hanya private key di atas yang bisa membukanya.");
+    emsg(`Terenkripsi untuk ${r.length} penerima. Masing-masing membukanya dengan private key sendiri.`);
   } catch (err) { emsg(err && err.user ? err.message : "Gagal mengenkripsi.", "err"); }
 });
 $("e-salin").addEventListener("click", async () => {
@@ -429,10 +440,16 @@ $("e-salin").addEventListener("click", async () => {
 $("d-dekripsi").addEventListener("click", async () => {
   const raw = $("d-teks").value.trim();
   $("d-hasil").hidden = true;
-  if (!raw.startsWith(PREFIX)) return emsg("Format teks tidak dikenali.", "err", "d-msg");
+  const dua = raw.startsWith(PREFIX2);
+  if (!dua && !raw.startsWith(PREFIX)) return emsg("Format teks tidak dikenali.", "err", "d-msg");
   try {
     const kunci = normalisasiKunci($("d-kunci").value);
-    const data = await bukaRecord(kunci, JSON.parse(unb64(raw.slice(PREFIX.length))));
+    const obj = JSON.parse(unb64(raw.slice((dua ? PREFIX2 : PREFIX).length)));
+    const daftar = dua ? obj.r : [obj];
+    const id = await idDari(pubDari(kunci));
+    const rec = daftar.find((x) => x && x.id === id);
+    if (!rec) return emsg("Teks ini bukan untuk private key tersebut.", "err", "d-msg");
+    const data = await bukaRecord(kunci, rec);
     $("d-hasil").value = String(data.t ?? ""); $("d-hasil").hidden = false;
     emsg("Berhasil didekripsi.", "", "d-msg");
   } catch (err) { emsg(err && err.user ? err.message : "Private key tidak cocok atau teks rusak.", "err", "d-msg"); }
