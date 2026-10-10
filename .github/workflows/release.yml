@@ -1,10 +1,13 @@
 name: Release extension
 
 # Setiap tag v* (mis. v3.0.1) membuat Release berisi zip extension.
+# Bisa juga dijalankan manual: Actions -> Release extension -> Run workflow
+# (tag v<versi manifest> dibuat otomatis).
 on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,7 +21,7 @@ jobs:
       - name: Periksa versi manifest sama dengan tag
         run: |
           V=$(jq -r .version extension/manifest.json)
-          if [ "v$V" != "${GITHUB_REF_NAME}" ]; then
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "v$V" != "${GITHUB_REF_NAME}" ]; then
             echo "Tag ${GITHUB_REF_NAME} tidak sama dengan versi manifest v$V" >&2
             exit 1
           fi
@@ -45,5 +48,5 @@ jobs:
           Update: unduh zip versi terbaru, ekstrak ke folder yang sama, lalu muat ulang extension.
           EOT
           sed -i 's/^          //' catatan.md
-          gh release create "${GITHUB_REF_NAME}" "aistim-tool-extension-v${VERSION}.zip" \
+          gh release create "v${VERSION}" "aistim-tool-extension-v${VERSION}.zip" --target "${GITHUB_SHA}" \
             --title "Aistim Tool v${VERSION}" --notes-file catatan.md
