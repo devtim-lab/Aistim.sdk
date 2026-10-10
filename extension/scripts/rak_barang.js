@@ -1,245 +1,20 @@
-// ==UserScript==
-// @name         Rak Barang - Tombol Hapus
-// @namespace    http://tampermonkey.net/
-// @version      1.2.0
-// @description  Tambah tombol hapus (per-baris & massal) & tambah rak massal (by range) di halaman Rak Barang
-// @match        https://*.erzap.com/rak_barangs*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=erzap.com
-// @grant        none
-// ==/UserScript==
-
-(function () {
-    'use strict';
-
-    // Fallback daftar Gudang (dipakai saat modal dibuka dari halaman list, yang tidak
-    // punya <select> Gudang asli untuk dibaca). Diambil dari form tambah rak asli.
-    // Kalau daftar outlet berubah, sesuaikan juga di sini.
-    const GUDANG_OPTIONS_FALLBACK = `
+(function(){"use strict";const _=`
         <option value="">-- Pilih Gudang --</option>
         <option value="2">RETUR OTOTECH</option>
         <option value="3">TOKO OTOTECH</option>
         <option value="9">TOKO PANDERMAN</option>
         <option value="10">REST UP CAFE</option>
-    `;
-
-    let overlayEl = null;
-
-    function showLoading(text) {
-        if (!overlayEl) {
-            overlayEl = document.createElement('div');
-            overlayEl.id = 'hapus_rak_overlay';
-            overlayEl.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;';
-            overlayEl.innerHTML = `
+    `;let d=null;function c(e){d||(d=document.createElement("div"),d.id="hapus_rak_overlay",d.style.cssText="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;",d.innerHTML=`
                 <div style="background:#fff;padding:20px 28px;border-radius:8px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
                     <div style="width:20px;height:20px;border:3px solid #ddd;border-top-color:#dc3545;border-radius:50%;animation:hapus_rak_spin 0.7s linear infinite;"></div>
-                    <span id="hapus_rak_overlay_text" style="font-size:14px;color:#333;">${text}</span>
+                    <span id="hapus_rak_overlay_text" style="font-size:14px;color:#333;">${e}</span>
                 </div>
                 <style>@keyframes hapus_rak_spin { to { transform: rotate(360deg); } }</style>
-            `;
-            document.body.appendChild(overlayEl);
-        }
-        const label = overlayEl.querySelector('#hapus_rak_overlay_text');
-        if (label) label.textContent = text;
-        overlayEl.style.display = 'flex';
-    }
-
-    function hideLoading() {
-        if (overlayEl) overlayEl.style.display = 'none';
-    }
-
-    function getIdFromRow(tr) {
-        const links = tr.querySelectorAll('a[href*="/rak_barangs/"]');
-        for (const a of links) {
-            const m = a.getAttribute('href').match(/^\/rak_barangs\/(\d+)$/);
-            if (m) return m[1];
-        }
-        return null;
-    }
-
-    function destroyUrl(id) {
-        return `/rak_barangs/destroy/${id}?page=1`;
-    }
-
-    async function deleteRakBarang(id) {
-        const res = await fetch(destroyUrl(id), { credentials: 'same-origin' });
-        if (!res.ok) {
-            console.error('[HapusRak] gagal id=', id, 'status=', res.status);
-        }
-        return res.ok;
-    }
-
-    function ensureToolbar() {
-        if (document.getElementById('hapus_rak_toolbar')) return;
-        const h1 = document.querySelector('#ajax_target h1');
-        if (!h1) return;
-
-        const bar = document.createElement('div');
-        bar.id = 'hapus_rak_toolbar';
-        bar.style.cssText = 'margin:10px 0;display:flex;gap:8px;align-items:center;';
-        bar.innerHTML = `
+            `,document.body.appendChild(d));const t=d.querySelector("#hapus_rak_overlay_text");t&&(t.textContent=e),d.style.display="flex"}function b(){d&&(d.style.display="none")}function y(e){const t=e.querySelectorAll('a[href*="/rak_barangs/"]');for(const a of t){const o=a.getAttribute("href").match(/^\/rak_barangs\/(\d+)$/);if(o)return o[1]}return null}function k(e){return`/rak_barangs/destroy/${e}?page=1`}async function x(e){const t=await fetch(k(e),{credentials:"same-origin"});return t.ok||console.error("[HapusRak] gagal id=",e,"status=",t.status),t.ok}function v(){if(document.getElementById("hapus_rak_toolbar"))return;const e=document.querySelector("#ajax_target h1");if(!e)return;const t=document.createElement("div");t.id="hapus_rak_toolbar",t.style.cssText="margin:10px 0;display:flex;gap:8px;align-items:center;",t.innerHTML=`
             <button id="btn_pilih_semua_rak" type="button" style="padding:5px 12px;border:1px solid #ccc;border-radius:4px;cursor:pointer;background:#fff;">Pilih Semua</button>
             <button id="btn_hapus_terpilih_rak" type="button" style="padding:5px 12px;border:none;border-radius:4px;cursor:pointer;background:#dc3545;color:#fff;">Hapus Terpilih</button>
             <button id="btn_tambah_rak_massal" type="button" style="padding:5px 12px;border:none;border-radius:4px;cursor:pointer;background:#28a745;color:#fff;">+ Tambah Rak Massal</button>
-        `;
-        h1.insertAdjacentElement('afterend', bar);
-
-        document.getElementById('btn_pilih_semua_rak').addEventListener('click', () => {
-            const boxes = document.querySelectorAll('.chk_rak');
-            const allChecked = Array.from(boxes).every((c) => c.checked);
-            boxes.forEach((c) => (c.checked = !allChecked));
-        });
-
-        document.getElementById('btn_hapus_terpilih_rak').addEventListener('click', async () => {
-            const selected = Array.from(document.querySelectorAll('.chk_rak:checked')).map((c) => c.value);
-            if (!selected.length) {
-                alert('Pilih minimal 1 data dulu.');
-                return;
-            }
-            if (!confirm(`Apakah anda yakin ingin menghapus ${selected.length} data terpilih?`)) return;
-
-            let success = 0;
-            showLoading(`Menghapus 0/${selected.length}...`);
-            for (const [i, id] of selected.entries()) {
-                const ok = await deleteRakBarang(id);
-                if (ok) success++;
-                showLoading(`Menghapus ${i + 1}/${selected.length}...`);
-            }
-            hideLoading();
-            alert(`${success} dari ${selected.length} data berhasil dihapus.`);
-            location.reload();
-        });
-
-        document.getElementById('btn_tambah_rak_massal').addEventListener('click', openBulkRakModal);
-    }
-
-    function injectRowControls() {
-        const rows = document.querySelectorAll('#data_table tbody tr');
-        rows.forEach((tr) => {
-            if (tr.querySelector('.chk_rak')) return;
-
-            const id = getIdFromRow(tr);
-            if (!id) return;
-
-            const tds = tr.querySelectorAll('td');
-            const lihatTd = tds[1];
-            const editTd = tds[2];
-            if (!lihatTd || !editTd) return;
-
-            const chk = document.createElement('input');
-            chk.type = 'checkbox';
-            chk.className = 'chk_rak';
-            chk.value = id;
-            chk.style.marginRight = '6px';
-            lihatTd.insertBefore(chk, lihatTd.firstChild);
-
-            const sep = document.createTextNode(' | ');
-            const hapusLink = document.createElement('a');
-            hapusLink.href = destroyUrl(id);
-            hapusLink.textContent = 'Hapus';
-            hapusLink.style.color = '#dc3545';
-            hapusLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                const r = confirm('Apakah anda yakin ingin menghapus data ini?');
-                if (!r) return;
-                showLoading('Menghapus data...');
-                window.location = destroyUrl(id);
-            });
-            editTd.appendChild(sep);
-            editTd.appendChild(hapusLink);
-        });
-    }
-
-    function parseNameParts(name) {
-        const m = name.match(/^(.*?)(\d+)$/);
-        if (!m) return null;
-        return { prefix: m[1], digits: m[2] };
-    }
-
-    function generateRakNames(startName, endName) {
-        const s = parseNameParts(startName.trim());
-        const e = parseNameParts(endName.trim());
-        if (!s || !e) throw new Error('Format nama harus diakhiri angka, contoh: RKB-001');
-        if (s.prefix !== e.prefix) throw new Error('Bagian awal nama (sebelum angka) harus sama, contoh: RKB-001 sampai RKB-020');
-        const startNum = parseInt(s.digits, 10);
-        const endNum = parseInt(e.digits, 10);
-        if (endNum < startNum) throw new Error('Nama akhir harus lebih besar atau sama dengan nama awal');
-        const pad = Math.max(s.digits.length, e.digits.length);
-        const names = [];
-        for (let n = startNum; n <= endNum; n++) {
-            names.push(s.prefix + String(n).padStart(pad, '0'));
-        }
-        return names;
-    }
-
-    function getAuthToken() {
-        return document.querySelector('#new_rak_barang input[name="authenticity_token"]')?.value
-            || document.querySelector('meta[name="csrf-token"]')?.content
-            || document.querySelector('input[name="authenticity_token"]')?.value
-            || '';
-    }
-
-    async function createRakBarang({ nama, idgudang, keterangan, isActive }) {
-        const body = new URLSearchParams();
-        body.append('utf8', '✓');
-        body.append('authenticity_token', getAuthToken());
-        body.append('rak_barang[nama]', nama);
-        body.append('rak_barang[idgudang]', idgudang);
-        body.append('rak_barang[keterangan]', keterangan || '');
-        body.append('rak_barang[is_active]', isActive ? '1' : '0');
-
-        const res = await fetch('/rak_barangs', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body.toString(),
-            credentials: 'same-origin',
-        });
-
-        const text = await res.text();
-        const failed = !res.ok || text.includes('id="new_rak_barang"');
-        if (failed) {
-            console.error('[TambahRak] gagal nama=', nama, 'status=', res.status);
-        }
-        return !failed;
-    }
-
-    function closeBulkRakModal() {
-        const backdrop = document.getElementById('bulk_rak_modal_backdrop');
-        if (backdrop) backdrop.style.display = 'none';
-    }
-
-    function openBulkRakModal() {
-        const backdrop = document.getElementById('bulk_rak_modal_backdrop');
-        if (!backdrop) return;
-
-        // Kalau lagi ada di halaman form tambah rak, ambil daftar Gudang yang live
-        // dari select aslinya; kalau tidak (misal dibuka dari halaman list), pakai fallback.
-        const liveGudangSelect = document.querySelector('#new_rak_barang #rak_barang_idgudang');
-        if (liveGudangSelect) {
-            backdrop.querySelector('#bulk_rak_gudang').innerHTML = liveGudangSelect.innerHTML;
-        }
-        backdrop.style.display = 'flex';
-    }
-
-    function injectBulkCreateButtonOnFormPage() {
-        const form = document.querySelector('#new_rak_barang');
-        if (!form || document.getElementById('bulk_rak_open_btn')) return;
-
-        const openBtn = document.createElement('button');
-        openBtn.type = 'button';
-        openBtn.id = 'bulk_rak_open_btn';
-        openBtn.textContent = '+ Tambah Rak Massal';
-        openBtn.style.cssText = 'margin-top:16px;padding:6px 16px;border:none;border-radius:4px;cursor:pointer;background:#28a745;color:#fff;';
-        form.insertAdjacentElement('afterend', openBtn);
-        openBtn.addEventListener('click', openBulkRakModal);
-    }
-
-    function buildBulkRakModal() {
-        if (document.getElementById('bulk_rak_modal_backdrop')) return;
-
-        const backdrop = document.createElement('div');
-        backdrop.id = 'bulk_rak_modal_backdrop';
-        backdrop.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;';
-        backdrop.innerHTML = `
+        `,e.insertAdjacentElement("afterend",t),document.getElementById("btn_pilih_semua_rak").addEventListener("click",()=>{const a=document.querySelectorAll(".chk_rak"),o=Array.from(a).every(n=>n.checked);a.forEach(n=>n.checked=!o)}),document.getElementById("btn_hapus_terpilih_rak").addEventListener("click",async()=>{const a=Array.from(document.querySelectorAll(".chk_rak:checked")).map(n=>n.value);if(!a.length){alert("Pilih minimal 1 data dulu.");return}if(!confirm(`Apakah anda yakin ingin menghapus ${a.length} data terpilih?`))return;let o=0;c(`Menghapus 0/${a.length}...`);for(const[n,i]of a.entries())await x(i)&&o++,c(`Menghapus ${n+1}/${a.length}...`);b(),alert(`${o} dari ${a.length} data berhasil dihapus.`),location.reload()}),document.getElementById("btn_tambah_rak_massal").addEventListener("click",m)}function w(){document.querySelectorAll("#data_table tbody tr").forEach(t=>{if(t.querySelector(".chk_rak"))return;const a=y(t);if(!a)return;const o=t.querySelectorAll("td"),n=o[1],i=o[2];if(!n||!i)return;const r=document.createElement("input");r.type="checkbox",r.className="chk_rak",r.value=a,r.style.marginRight="6px",n.insertBefore(r,n.firstChild);const s=document.createTextNode(" | "),l=document.createElement("a");l.href=k(a),l.textContent="Hapus",l.style.color="#dc3545",l.addEventListener("click",u=>{u.preventDefault(),confirm("Apakah anda yakin ingin menghapus data ini?")&&(c("Menghapus data..."),window.location=k(a))}),i.appendChild(s),i.appendChild(l)})}function g(e){const t=e.match(/^(.*?)(\d+)$/);return t?{prefix:t[1],digits:t[2]}:null}function E(e,t){const a=g(e.trim()),o=g(t.trim());if(!a||!o)throw new Error("Format nama harus diakhiri angka, contoh: RKB-001");if(a.prefix!==o.prefix)throw new Error("Bagian awal nama (sebelum angka) harus sama, contoh: RKB-001 sampai RKB-020");const n=parseInt(a.digits,10),i=parseInt(o.digits,10);if(i<n)throw new Error("Nama akhir harus lebih besar atau sama dengan nama awal");const r=Math.max(a.digits.length,o.digits.length),s=[];for(let l=n;l<=i;l++)s.push(a.prefix+String(l).padStart(r,"0"));return s}function S(){return document.querySelector('#new_rak_barang input[name="authenticity_token"]')?.value||document.querySelector('meta[name="csrf-token"]')?.content||document.querySelector('input[name="authenticity_token"]')?.value||""}async function T({nama:e,idgudang:t,keterangan:a,isActive:o}){const n=new URLSearchParams;n.append("utf8","✓"),n.append("authenticity_token",S()),n.append("rak_barang[nama]",e),n.append("rak_barang[idgudang]",t),n.append("rak_barang[keterangan]",a||""),n.append("rak_barang[is_active]",o?"1":"0");const i=await fetch("/rak_barangs",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:n.toString(),credentials:"same-origin"}),r=await i.text(),s=!i.ok||r.includes('id="new_rak_barang"');return s&&console.error("[TambahRak] gagal nama=",e,"status=",i.status),!s}function p(){const e=document.getElementById("bulk_rak_modal_backdrop");e&&(e.style.display="none")}function m(){const e=document.getElementById("bulk_rak_modal_backdrop");if(!e)return;const t=document.querySelector("#new_rak_barang #rak_barang_idgudang");t&&(e.querySelector("#bulk_rak_gudang").innerHTML=t.innerHTML),e.style.display="flex"}function R(){const e=document.querySelector("#new_rak_barang");if(!e||document.getElementById("bulk_rak_open_btn"))return;const t=document.createElement("button");t.type="button",t.id="bulk_rak_open_btn",t.textContent="+ Tambah Rak Massal",t.style.cssText="margin-top:16px;padding:6px 16px;border:none;border-radius:4px;cursor:pointer;background:#28a745;color:#fff;",e.insertAdjacentElement("afterend",t),t.addEventListener("click",m)}function B(){if(document.getElementById("bulk_rak_modal_backdrop"))return;const e=document.createElement("div");e.id="bulk_rak_modal_backdrop",e.style.cssText="position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;",e.innerHTML=`
             <div style="background:#fff;padding:20px 24px;border-radius:8px;max-width:420px;width:90%;box-shadow:0 4px 20px rgba(0,0,0,0.25);">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
                     <h3 style="margin:0;">Tambah Rak Massal (Range)</h3>
@@ -247,7 +22,7 @@
                 </div>
                 <div class="field" style="margin-top:14px;">
                     <label>Gudang</label><br>
-                    <select id="bulk_rak_gudang" style="width:100%;">${GUDANG_OPTIONS_FALLBACK}</select>
+                    <select id="bulk_rak_gudang" style="width:100%;">${_}</select>
                 </div>
                 <div class="field" style="margin-top:10px;">
                     <label>Nama Rak Mulai</label><br>
@@ -269,69 +44,6 @@
                     <button type="button" id="bulk_rak_submit" style="padding:6px 16px;border:none;border-radius:4px;cursor:pointer;background:#28a745;color:#fff;">Buat Rak</button>
                 </div>
             </div>
-        `;
-        document.body.appendChild(backdrop);
-
-        backdrop.addEventListener('click', (e) => {
-            if (e.target === backdrop) closeBulkRakModal();
-        });
-        backdrop.querySelector('#bulk_rak_close_btn').addEventListener('click', closeBulkRakModal);
-        backdrop.querySelector('#bulk_rak_cancel_btn').addEventListener('click', closeBulkRakModal);
-
-        backdrop.querySelector('#bulk_rak_submit').addEventListener('click', async () => {
-            const idgudang = backdrop.querySelector('#bulk_rak_gudang').value;
-            const startName = backdrop.querySelector('#bulk_rak_start').value;
-            const endName = backdrop.querySelector('#bulk_rak_end').value;
-            const keterangan = backdrop.querySelector('#bulk_rak_keterangan').value;
-            const isActive = backdrop.querySelector('#bulk_rak_active').checked;
-
-            if (!idgudang) {
-                alert('Pilih Gudang dulu.');
-                return;
-            }
-
-            let names;
-            try {
-                names = generateRakNames(startName, endName);
-            } catch (err) {
-                alert(err.message);
-                return;
-            }
-
-            if (names.length > 500) {
-                alert(`Rentang terlalu besar (${names.length} rak). Cek lagi nama awal/akhir.`);
-                return;
-            }
-
-            const preview = names.length <= 8
-                ? names.join(', ')
-                : `${names.slice(0, 3).join(', ')}, ..., ${names.slice(-3).join(', ')}`;
-            if (!confirm(`Akan membuat ${names.length} rak: ${preview}\nLanjutkan?`)) return;
-
-            let success = 0;
-            showLoading(`Membuat 0/${names.length}...`);
-            for (const [i, nama] of names.entries()) {
-                const ok = await createRakBarang({ nama, idgudang, keterangan, isActive });
-                if (ok) success++;
-                showLoading(`Membuat ${i + 1}/${names.length}...`);
-            }
-            hideLoading();
-            closeBulkRakModal();
-            alert(`${success} dari ${names.length} rak berhasil dibuat.` + (success < names.length ? '\nCek console (F12) untuk detail yang gagal.' : ''));
-            location.href = '/rak_barangs/index/new?page=1';
-        });
-    }
-
-    function init() {
-        buildBulkRakModal();
-        if (document.querySelector('#data_table tbody tr')) {
-            ensureToolbar();
-            injectRowControls();
-        }
-        injectBulkCreateButtonOnFormPage();
-    }
-
-    const observer = new MutationObserver(() => init());
-    observer.observe(document.body, { childList: true, subtree: true });
-    init();
-})();
+        `,document.body.appendChild(e),e.addEventListener("click",t=>{t.target===e&&p()}),e.querySelector("#bulk_rak_close_btn").addEventListener("click",p),e.querySelector("#bulk_rak_cancel_btn").addEventListener("click",p),e.querySelector("#bulk_rak_submit").addEventListener("click",async()=>{const t=e.querySelector("#bulk_rak_gudang").value,a=e.querySelector("#bulk_rak_start").value,o=e.querySelector("#bulk_rak_end").value,n=e.querySelector("#bulk_rak_keterangan").value,i=e.querySelector("#bulk_rak_active").checked;if(!t){alert("Pilih Gudang dulu.");return}let r;try{r=E(a,o)}catch(u){alert(u.message);return}if(r.length>500){alert(`Rentang terlalu besar (${r.length} rak). Cek lagi nama awal/akhir.`);return}const s=r.length<=8?r.join(", "):`${r.slice(0,3).join(", ")}, ..., ${r.slice(-3).join(", ")}`;if(!confirm(`Akan membuat ${r.length} rak: ${s}
+Lanjutkan?`))return;let l=0;c(`Membuat 0/${r.length}...`);for(const[u,h]of r.entries())await T({nama:h,idgudang:t,keterangan:n,isActive:i})&&l++,c(`Membuat ${u+1}/${r.length}...`);b(),p(),alert(`${l} dari ${r.length} rak berhasil dibuat.`+(l<r.length?`
+Cek console (F12) untuk detail yang gagal.`:"")),location.href="/rak_barangs/index/new?page=1"})}function f(){B(),document.querySelector("#data_table tbody tr")&&(v(),w()),R()}new MutationObserver(()=>f()).observe(document.body,{childList:!0,subtree:!0}),f()})();

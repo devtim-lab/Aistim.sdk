@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Membuat extension/scripts/index.json dari header ==UserScript== di setiap
-// extension/scripts/*.js (gaya Tampermonkey). Menambah script cukup menaruh
+// scripts-src/*.js (gaya Tampermonkey). Menambah script cukup menaruh
 // satu berkas .js di folder itu; tidak ada daftar yang diedit manual.
 //
 // Header yang dipakai: @name, @version (x.y.z), @description, @match
@@ -11,7 +11,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "extension", "scripts");
+const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+const dir = path.join(root, "scripts-src");                      // sumber script (terbaca)
+const outDir = path.join(root, "extension", "scripts");         // hasil (dipakai extension)
 const RUN_AT = { "document-start": "document_start", "document-end": "document_end", "document-idle": "document_idle" };
 const MATCH_RE = /^https?:\/\/(\*\.)?[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d+)?\/.*$/i;
 
@@ -54,5 +56,6 @@ for (const file of fs.readdirSync(dir).filter((f) => f.endsWith(".js")).sort()) 
   scripts.push(entry);
 }
 scripts.sort((a, b) => a.nama.localeCompare(b.nama, "id"));
-fs.writeFileSync(path.join(dir, "index.json"), JSON.stringify({ scripts }, null, 2) + "\n");
+fs.mkdirSync(outDir, { recursive: true });
+fs.writeFileSync(path.join(outDir, "index.json"), JSON.stringify({ scripts }, null, 2) + "\n");
 console.log(`Katalog: ${scripts.length} script (${scripts.filter((s) => s.tipe === "inject").length} injeksi)`);

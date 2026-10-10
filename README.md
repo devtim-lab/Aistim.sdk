@@ -30,3 +30,9 @@ Workflow `release.yml` membuat Release berisi `aistim-tool-extension-v<versi>.zi
 `extension/akun.json` berisi daftar akun (`nama`, `addr`, `pub`, `role`, `script`). Saat login, private key menandatangani `aistim-login:<id extension>` di memori, alamat dipulihkan dari signature, lalu dicocokkan dengan `addr`. Signature dan key tidak disimpan.
 
 Membangun `extension/alamat.js` (hanya perlu bila `tools/alamat.src.mjs` berubah): pasang `@noble/secp256k1@2.2.3`, `@noble/hashes@1.8.0` dan `esbuild`, lalu `esbuild tools/alamat.src.mjs --bundle --minify --format=esm --outfile=extension/alamat.js`.
+
+## Menambah atau mengubah script
+
+Taruh atau ubah script (gaya Tampermonkey, dengan header `==UserScript==`) di **`scripts-src/`**. Setelah push ke `main`, workflow **Minify scripts** otomatis membuat versi kecil di `extension/scripts/` (yang dipakai extension) lengkap dengan `index.json`. Jangan mengedit `extension/scripts/` langsung, karena akan ditimpa.
+
+Menjalankan sendiri: `npm install esbuild` lalu `node tools/build-scripts.mjs`.

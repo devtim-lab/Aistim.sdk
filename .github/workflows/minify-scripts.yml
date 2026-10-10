@@ -1,0 +1,39 @@
+name: Minify scripts
+
+# Setiap script di scripts-src/ diperkecil ke extension/scripts/ (yang dipakai extension).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts-src/**"
+      - "tools/build-catalog.mjs"
+      - "tools/build-scripts.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: minify-scripts
+  cancel-in-progress: false
+
+jobs:
+  minify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Pasang esbuild
+        run: npm install --no-save --no-audit --no-fund esbuild@0.25.0
+      - name: Bangun katalog dan minify
+        run: node tools/build-scripts.mjs
+      - name: Commit hasil
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add extension/scripts
+          git diff --cached --quiet && { echo "Tidak ada perubahan"; exit 0; }
+          git commit -m "Minify scripts (otomatis)"
+          git push
