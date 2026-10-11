@@ -681,21 +681,28 @@ $("t-batal").addEventListener("click", tutupTambah);
 $("form-tambah").addEventListener("pointerdown", (e) => { if (e.target.id === "form-tambah") tutupTambah(); });
 $("t-admin-role").addEventListener("change", () => { $("t-bagian-izin").hidden = $("t-admin-role").checked; });
 $("form-login").addEventListener("submit", submit);
-// Tekan lama pada kolom: muncul menu "Tempel" seperti di aplikasi lain
-// (menu tempel bawaan browser sering tidak muncul di popup).
+// Tekan lama pada kolom isian: muncul menu Tempel / Salin / Potong / Pilih semua
+// (menu bawaan browser sering tidak muncul di popup). Berlaku untuk semua kolom teks.
 {
-  const menu = $("menu-tempel"), tombol = menu.querySelector("button");
+  const menu = $("menu-tempel");
+  const KOLOM = "input[type=text], input[type=password], input[type=search], textarea:not([readonly])";
   let target = null, timer = null, mulai = null;
   const tutup = () => { menu.hidden = true; target = null; };
+  const tombolAksi = (a) => menu.querySelector(`[data-aksi="${a}"]`);
   const buka = (input) => {
     target = input;
+    const sandi = input.type === "password";
+    tombolAksi("salin").hidden = sandi; tombolAksi("potong").hidden = sandi;   // isi kolom sandi/private key tidak disalin
+    for (const b of menu.querySelectorAll("button")) b.textContent = { tempel: "Tempel", salin: "Salin", potong: "Potong", semua: "Pilih semua" }[b.dataset.aksi];
     const r = input.getBoundingClientRect();
     menu.hidden = false;
     const w = menu.offsetWidth || 90;
-    menu.style.left = Math.max(8, Math.min(r.left + 16, window.innerWidth - w - 8)) + "px";
+    menu.style.left = Math.max(8, Math.min(r.left + 8, window.innerWidth - w - 8)) + "px";
     menu.style.top = Math.max(8, r.top - 50) + "px";
   };
-  for (const input of document.querySelectorAll("[data-tempel]")) {
+  const pasang = (input) => {
+    if (input.dataset.menu) return;
+    input.dataset.menu = "1";
     input.addEventListener("contextmenu", (e) => { e.preventDefault(); buka(input); });
     input.addEventListener("pointerdown", (e) => {
       mulai = { x: e.clientX, y: e.clientY };
@@ -706,22 +713,47 @@ $("form-login").addEventListener("submit", submit);
     input.addEventListener("pointermove", (e) => {
       if (mulai && Math.hypot(e.clientX - mulai.x, e.clientY - mulai.y) > 10) clearTimeout(timer);
     });
-  }
-  document.addEventListener("pointerdown", (e) => { if (!menu.hidden && !e.target.closest("#menu-tempel") && !e.target.matches("[data-tempel]")) tutup(); });
+  };
+  document.querySelectorAll(KOLOM).forEach(pasang);
+  document.addEventListener("pointerdown", (e) => { if (!menu.hidden && !e.target.closest("#menu-tempel") && !e.target.matches(KOLOM)) tutup(); });
   window.addEventListener("scroll", tutup, true);
-  tombol.addEventListener("click", async () => {
-    const input = target;
-    if (!input) return tutup();
+  const pesan = (a, teks) => { const b = tombolAksi(a); b.textContent = teks; setTimeout(tutup, 900); };
+  const salinTeks = async (teks) => {
+    try { await navigator.clipboard.writeText(teks); return true; } catch { /* coba cara lama */ }
+    try { return document.execCommand("copy"); } catch { return false; }
+  };
+  const terpilih = (el) => {
+    const a = el.selectionStart ?? 0, b = el.selectionEnd ?? 0;
+    return b > a ? el.value.slice(a, b) : el.value;   // tanpa blok: seluruh isi kolom
+  };
+  menu.addEventListener("pointerdown", (e) => e.preventDefault());   // jangan melepas fokus/blok kolom
+  menu.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button");
+    const el = target;
+    if (!btn || !el) return;
+    const aksi = btn.dataset.aksi;
+    if (aksi === "semua") { el.focus(); el.select(); return tutup(); }
+    if (aksi === "salin" || aksi === "potong") {
+      const teks = terpilih(el);
+      if (!teks) return pesan(aksi, "Kosong");
+      if (!(await salinTeks(teks))) return pesan(aksi, "Gagal menyalin");
+      if (aksi === "potong") {
+        const a = el.selectionStart ?? 0, b = el.selectionEnd ?? 0;
+        if (b > a) el.setRangeText("", a, b, "end"); else el.value = "";
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      return pesan(aksi, "Tersalin");
+    }
     try {
       const teks = (await navigator.clipboard.readText()).trim();
       if (!teks) throw new Error("kosong");
-      input.value = teks;
-      input.dispatchEvent(new Event("input", { bubbles: true }));
+      if (el.tagName === "TEXTAREA") el.setRangeText(teks, el.selectionStart ?? el.value.length, el.selectionEnd ?? el.value.length, "end");
+      else el.value = teks;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
       tutup();
-      input.focus();
+      el.focus();
     } catch {
-      tombol.textContent = "Clipboard kosong";
-      setTimeout(() => { tombol.textContent = "Tempel"; tutup(); }, 1200);
+      pesan("tempel", "Clipboard kosong");
     }
   });
 }

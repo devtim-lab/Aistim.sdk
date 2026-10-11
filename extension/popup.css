@@ -189,9 +189,10 @@ button.bahaya { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--
 .ikon-dalam:hover, .ikon-dalam[aria-pressed="true"] { color: var(--accent); }
 .ikon-dalam svg[hidden] { display: none; }
 /* Menu Tempel (tekan lama) */
-#menu-tempel { position: fixed; z-index: 30; padding: 4px; border-radius: 12px; background: #2a0e12; box-shadow: 0 4px 18px rgba(0,0,0,.35); }
+#menu-tempel { display: flex; flex-wrap: wrap; max-width: calc(100vw - 16px); position: fixed; z-index: 30; padding: 4px; border-radius: 12px; background: #2a0e12; box-shadow: 0 4px 18px rgba(0,0,0,.35); }
 #menu-tempel[hidden] { display: none; }
-#menu-tempel button { padding: 10px 18px; border: 0; border-radius: 8px; background: none; color: #fff; font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
+#menu-tempel button[hidden] { display: none; }
+#menu-tempel button { padding: 10px 14px; border: 0; border-radius: 8px; background: none; color: #fff; font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
 #menu-tempel button:hover { background: rgba(255,255,255,.12); }
 
 /* tab Enkripsi */
