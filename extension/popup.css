@@ -276,3 +276,7 @@ pre#g-key-isi { margin: 6px 0; padding: 8px; background: var(--card); border: 1p
 #modal-hasil .kotak { max-height: calc(100dvh - 32px); overflow-y: auto; }
 #modal-hasil textarea { width: 100%; box-sizing: border-box; margin-top: 8px; font: 12px ui-monospace, monospace; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: inherit; resize: vertical; word-break: break-all; }
 #mh-tutup { padding: 13px 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
+
+/* Bingkai luar: popup tampak sebagai kartu berbingkai, juga saat dibuka sebagai tab */
+body { padding: 8px; background: var(--card); }
+main { background: #fff; border: 1.5px solid var(--line); border-radius: 20px; box-shadow: 0 2px 14px -6px rgba(229,25,45,.35); }
