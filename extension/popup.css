@@ -115,7 +115,8 @@ header, #tabs { flex: none; }
 #view-user { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 #pane-script { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 #pane-script > :not(#manager) { flex: none; }
-#pane-akun, #pane-akses { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+#pane-akun, #pane-akses, #pane-enkripsi, #pane-dekripsi { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+#pane-enkripsi[hidden], #pane-dekripsi[hidden], #pane-akun[hidden] { display: none; }
 #view-login { flex: 1 1 auto; overflow-y: auto; }
 @media (max-width: 600px) { body { height: 100vh; } }
 #pane-akses { display: flex; flex-direction: column; }
