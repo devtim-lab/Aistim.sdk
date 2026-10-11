@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "keterangan": "Token GitHub untuk memicu workflow Bangun paket script per akun di repo Aistim.sdk (Actions: Read and write). Terenkripsi, hanya admin yang bisa membuka.",
+  "token": "aistim2:eyJ2IjoyLCJyIjpbeyJpZCI6IjBkZWU1ODQ5MmIyYTU5MTFlYThiZGJiYmJmOTc3YmQyIiwiZXBrIjoiMDJjOWM1OGM3YzdiZmNhMjlkMDEzYWQ4OGRiZGY0M2EyZGRkMTk2NjQyMDA5ZWIzNjg1ZGY4ZGZlMDUyNGQ5YTI0IiwiaXYiOiJ2ajJDdi9jZmlMQXltTTRYIiwiY3QiOiJNRURFMEZ0bklqeDFSNnpreDhxeFYwelYxS3M5eEcxWnlNeVNhSGlzRlNpZG9XWnZEcnBxN1NiV2RaZlY1TGp3Ykhlb1hPZGlXUmZWVWt1cVdlQTI1SVkrWEVFRG9MbHdEU2w1VDUrQ1BQTFBRWnhZYm05UVViK1FRZm9BZzI2NFlKbDBSKzF5UDhkN2tZcjI2OEV4Wjlsa0grVk4ifV19"
+}

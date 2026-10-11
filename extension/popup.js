@@ -358,6 +358,27 @@ const sha256 = async (s) => [...new Uint8Array(await crypto.subtle.digest("SHA-2
 const gagalUser = (m) => Object.assign(new Error(m), { user: true });
 
 /** Kirim perubahan akun.json: ditandatangani private key admin, lalu memicu workflow update-akun di repo Auth yang memverifikasi dan commit. */
+const TOK_SDK_KEY = "devchain.toksdk", REPO_SDK = "devtim-lab/Aistim.sdk";
+/** Picu pembuatan paket script per akun di repo Aistim.sdk (akses akun baru langsung berlaku). Gagal tidak mengganggu upload. */
+let paketDipicu = false;
+async function picuPaket(priv) {
+  paketDipicu = false;
+  try {
+    let tok = "";
+    try { tok = (await chrome.storage.session.get(TOK_SDK_KEY))[TOK_SDK_KEY] || ""; } catch { tok = ""; }
+    if (!tok) {
+      tok = await bukaTokenDari("token-sdk.json", priv);
+      if (!tok) return;
+      try { await chrome.storage.session.set({ [TOK_SDK_KEY]: tok }); } catch { /* abaikan */ }
+    }
+    const r = await fetch(`https://api.github.com/repos/${REPO_SDK}/actions/workflows/paket.yml/dispatches`, {
+      method: "POST", headers: { ...ghHeaders(tok), "Content-Type": "application/json" }, body: JSON.stringify({ ref: "main" }),
+      signal: AbortSignal.timeout(10000),
+    });
+    paketDipicu = r.status === 204;
+  } catch { /* paket akan dibangun lewat jadwal */ }
+}
+
 async function unggahAkun(isi, kunci) {
   let priv;
   try { priv = normalisasiKunci(kunci); } catch (err) { throw gagalUser(err.message); }
@@ -407,7 +428,10 @@ async function unggahAkun(isi, kunci) {
   for (let i = 0; i < 90; i++) {
     await new Promise((r) => setTimeout(r, 1000));
     const run = (await runTerakhir()).find((x) => x.id > idLama);
-    if (run && run.status === "completed") return run.conclusion === "success" ? "ok" : "gagal";
+    if (run && run.status === "completed") {
+      if (run.conclusion === "success") { await picuPaket(priv); return "ok"; }
+      return "gagal";
+    }
   }
   return "belum";
 }
@@ -579,7 +603,7 @@ async function submit(e) {
   }
 }
 
-$("logout").addEventListener("click", async () => { await setTok(""); await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); current = null; hasilVault = ""; $("logout").hidden = true; $("sync").hidden = true; showLogin(); });
+$("logout").addEventListener("click", async () => { await setTok(""); try { await chrome.storage.session.remove("devchain.toksdk"); } catch { /* abaikan */ } await clearScripts().catch(() => {}); await clearPlan().catch(() => {}); await store.clear(); current = null; hasilVault = ""; $("logout").hidden = true; $("sync").hidden = true; showLogin(); });
 $("tab-script").addEventListener("click", () => selectTab("script"));
 $("sync").addEventListener("click", () => jalankanSync(false));
 $("cari-script").addEventListener("input", renderManager);
@@ -801,7 +825,7 @@ $("mu-kirim").addEventListener("click", async (e) => {
     tutupModal();
     $("v-upload").hidden = true;
     $("vmsg").textContent = hasil === "ok"
-      ? "Tersimpan di repo Auth. Pengguna menerima daftar baru saat membuka popup atau login, tanpa rilis."
+      ? "Tersimpan di repo Auth. Pengguna menerima daftar baru saat membuka popup atau login, tanpa rilis." + (paketDipicu ? " Paket script akun sedang dibangun (sekitar 30 detik)." : " Paket script dibangun lewat jadwal (maks. 20 menit).")
       : "Perubahan terkirim, tapi workflow belum selesai. Periksa tab Actions di repo Auth (Update akun).";
     setTimeout(() => { if (!hasilVault) $("hasil-vault").hidden = true; }, 6000);
   } catch (err) {
