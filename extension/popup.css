@@ -93,7 +93,7 @@ h1 small { font-size: 12px; font-weight: 400; color: var(--muted); }
 
 /* Layar ponsel (popup memenuhi lebar layar): isi mengisi lebar dan tinggi, halaman yang bergulir. */
 @media (max-width: 600px) {
-  body { height: 100vh; }
+  body { height: 100%; }
   main { padding: 16px; }
   #akun-list { max-height: 40vh; }
 }
@@ -118,7 +118,7 @@ header, #tabs { flex: none; }
 #pane-akun, #pane-akses, #pane-enkripsi, #pane-dekripsi { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 #pane-enkripsi[hidden], #pane-dekripsi[hidden], #pane-akun[hidden] { display: none; }
 #view-login { flex: 1 1 auto; overflow-y: auto; }
-@media (max-width: 600px) { body { height: 100vh; } }
+@media (max-width: 600px) { body { height: 100%; } }
 #pane-akses { display: flex; flex-direction: column; }
 #pane-akses[hidden] { display: none; }
 #pane-akses > * { flex: none; }
@@ -285,5 +285,8 @@ main { background: #fff; border: 1.5px solid var(--line); border-radius: 20px; b
 /* Layar lebar (popup dibuka sebagai tab di desktop/tablet): kartu di tengah dengan lebar terbatas dan setinggi layar.
    Popup bawaan desktop (tinggi maks. ~600px) tidak terkena aturan ini. */
 @media (min-width: 601px) and (min-height: 650px) {
-  body { max-width: 480px; margin: 0 auto; height: 100vh; height: 100dvh; padding: 14px 8px; }
+  body { max-width: 480px; margin: 0 auto; height: 100%; padding: 14px 8px; }
 }
+
+/* Tanpa scroll samping di luar kartu: hanya isi tab yang bergulir */
+html { overflow: hidden; }
