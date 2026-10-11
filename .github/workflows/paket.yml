@@ -3,6 +3,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "*/20 * * * *"   # menangkap akun baru / perubahan akses dari akun.json (tidak ada yang dibangun ulang bila tidak berubah)
+  workflow_run:
+    workflows: ["Minify scripts"]   # push oleh bot tidak memicu workflow lain, jadi paket dibangun setelah minify selesai
+    types: [completed]
+    branches: [main]
   push:
     branches: [main]
     paths: ["extension/scripts/**", "tools/bangun-paket.mjs", "extension/paket.js"]
@@ -13,6 +17,7 @@ permissions:
   contents: read
 jobs:
   paket:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

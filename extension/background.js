@@ -6,7 +6,7 @@ const ALARM = "devchain-sync";
 const X_FETCH_ALLOW = ["partdistro.com"]; // host yang boleh diakses lewat jembatan x-fetch
 
 function jadwal() {
-  chrome.alarms.create(ALARM, { periodInMinutes: 30 });
+  chrome.alarms.create(ALARM, { periodInMinutes: 10 });
 }
 
 chrome.runtime.onInstalled.addListener(() => { jadwal(); syncScripts().catch(() => {}); });
