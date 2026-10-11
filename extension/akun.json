@@ -10,9 +10,9 @@
       "dibuat": "2026-10-10T00:00:00.000Z"
     },
     {
-      "nama": "servis",
-      "addr": "0x8f17aab9028a01d3864962c457729554ab4ca1d5",
-      "pub": "03b1a71b33b4c6a30a2c44b3fe34b4b9028036b23ff68cb9688f2c6a68de45b656",
+      "nama": "Servis",
+      "addr": "0x1bac9eb7ffd25062f883199b611fdbfcbbb6c945",
+      "pub": "0300348f2d4a2ec4f98a87dee2f3acb0501726c20b530143c7fceccd3f60011444",
       "role": "user",
       "script": [
         "kelolaservis",
@@ -22,9 +22,9 @@
       "dibuat": "2026-10-10T13:52:40.803Z"
     },
     {
-      "nama": "penjualan",
-      "addr": "0x581ca679f109c0fc10598d4f40cae6bad124ee02",
-      "pub": "03d20071af330fc430f0e9e150ef8ad58d2bd3577a1f990ecd0badbad5a95b263e",
+      "nama": "Penjualan",
+      "addr": "0x8cf6f36ba7e25a2e8b0f4c03fe1109beacc30733",
+      "pub": "03186b5c7015a3112603f658eb75b9bde4e30abbae28275c92652b38ac8c3d6722",
       "role": "user",
       "script": [
         "pesanan_web",
@@ -39,7 +39,8 @@
       "pub": "02693c08ddece726337ac72d38d82fdf3e7e1eeaa30f1b6e8319fc48e3df1d1cda",
       "role": "user",
       "script": [
-        "rakstok"
+        "rakstok",
+        "smart_repair"
       ],
       "dibuat": "2026-10-10T17:12:17.148Z"
     }
