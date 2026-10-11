@@ -34,15 +34,13 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
       if (target.protocol !== "https:" || !X_FETCH_ALLOW.some((h) => target.hostname === h || target.hostname.endsWith("." + h))) {
         throw new Error("host tidak diizinkan: " + target.hostname);
       }
+      // Dibatasi ketat: hanya GET ke jalur pencarian, tanpa body, dan hanya dua header yang dikenal.
+      if (!target.pathname.startsWith("/main/pencarian")) throw new Error("jalur tidak diizinkan");
       const opts = req.opts || {};
-      const res = await fetch(target.href, {
-        method: opts.method || "GET",
-        headers: opts.headers || {},
-        body: opts.body,
-        credentials: "include",
-        cache: "no-store",
-        redirect: "follow",
-      });
+      if (opts.method && String(opts.method).toUpperCase() !== "GET") throw new Error("metode tidak diizinkan");
+      const headers = {};
+      for (const k of ["Accept", "X-Requested-With"]) { const v = (opts.headers || {})[k]; if (typeof v === "string" && v.length < 100) headers[k] = v; }
+      const res = await fetch(target.href, { method: "GET", headers, credentials: "include", cache: "no-store", redirect: "follow" });
       sendResponse({ ok: res.ok, status: res.status, url: res.url, text: await res.text() });
     } catch (e) {
       sendResponse({ ok: false, status: 0, error: String(e && e.message || e) });
