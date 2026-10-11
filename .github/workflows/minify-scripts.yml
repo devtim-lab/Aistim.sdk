@@ -37,3 +37,23 @@ jobs:
           git diff --cached --quiet && { echo "Tidak ada perubahan"; exit 0; }
           git commit -m "Minify scripts (otomatis)"
           git push
+
+      # Paket per akun dibangun di job yang sama, jadi script baru langsung sampai ke repo Auth (tanpa menunggu workflow lain).
+      - uses: actions/checkout@v4
+        with:
+          repository: devtim-lab/Auth
+          path: auth
+          token: ${{ secrets.AUTH_TOKEN }}
+      - name: Bangun paket per akun
+        env:
+          PAKET_SEED: ${{ secrets.PAKET_SEED }}
+        run: node tools/bangun-paket.mjs auth
+      - name: Commit paket ke Auth
+        working-directory: auth
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add paket
+          git diff --cached --quiet && { echo "paket tidak berubah"; exit 0; }
+          git commit -m "paket: perbarui paket script"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push && break; sleep 3; done
