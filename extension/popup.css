@@ -281,3 +281,9 @@ pre#g-key-isi { margin: 6px 0; padding: 8px; background: var(--card); border: 1p
 /* Bingkai luar: popup tampak sebagai kartu berbingkai, juga saat dibuka sebagai tab */
 body { padding: 8px; background: var(--card); }
 main { background: #fff; border: 1.5px solid var(--line); border-radius: 20px; box-shadow: 0 2px 14px -6px rgba(229,25,45,.35); }
+
+/* Layar lebar (popup dibuka sebagai tab di desktop/tablet): kartu di tengah dengan lebar terbatas dan setinggi layar.
+   Popup bawaan desktop (tinggi maks. ~600px) tidak terkena aturan ini. */
+@media (min-width: 601px) and (min-height: 650px) {
+  body { max-width: 480px; margin: 0 auto; height: 100vh; height: 100dvh; padding: 14px 8px; }
+}
