@@ -2,7 +2,7 @@ name: Bangun paket script per akun
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/20 * * * *"   # menangkap akun baru / perubahan akses dari akun.json (tidak ada yang dibangun ulang bila tidak berubah)
+    - cron: "17 */6 * * *"   # jaring pengaman saja (upload akun & perubahan script sudah memicu langsung); tidak membangun ulang bila tidak berubah
   push:
     branches: [main]
     paths: ["extension/scripts/**", "tools/bangun-paket.mjs", "extension/paket.js"]
