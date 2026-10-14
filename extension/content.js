@@ -25,8 +25,9 @@
   // popup menanyakan script mana yang aktif di halaman ini
   try {
     chrome.runtime.onMessage.addListener(function (msg, _from, sendResponse) {
-      if (!msg || msg.tipe !== "aistim-aktif") return;
-      var a = (document.documentElement.getAttribute("data-aistim") || "").split(",").filter(Boolean);
+      if (!msg || (msg.tipe !== "aistim-aktif" && msg.tipe !== "devchain-aktif")) return;   // "devchain-*": nama lama, masa peralihan
+      var d = document.documentElement;
+      var a = ((d.getAttribute("data-aistim") || "") + "," + (d.getAttribute("data-devchain") || "")).split(",").filter(function (x, i, s) { return x && s.indexOf(x) === i; });
       sendResponse({ aktif: a, url: location.href });
     });
   } catch (e) { /* abaikan */ }

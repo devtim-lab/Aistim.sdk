@@ -12,7 +12,7 @@
       ],
       "world": "USER_SCRIPT",
       "runAt": "document_idle",
-      "sha256": "f448697e0d04addd9e02fd361b2bdf7d954f0330373bb9d9b5d9419b221efb82"
+      "sha256": "5874567b0da5377100f06dddbbf3af9366e4765ebe002f8157de16bd9e3546a4"
     },
     {
       "id": "koreksiso",
@@ -26,7 +26,7 @@
       ],
       "world": "MAIN",
       "runAt": "document_idle",
-      "sha256": "2b7fd7e0282f1b9a48afc4c30e155faf2377c1879ffd37ee53e6018fa41dbafa"
+      "sha256": "057911539c5634743610b300e6db87dd1ec2671557c47bf9401031ae6684b5e4"
     },
     {
       "id": "rekam",
@@ -40,7 +40,7 @@
       ],
       "world": "MAIN",
       "runAt": "document_idle",
-      "sha256": "a3748ad031610327829f7b69a570ecda9702891cdce0a1902cdd510194721bee"
+      "sha256": "f40a9f8e91976204103d211f3a94bf61048116769f7ae61b8d62536c6b161b60"
     },
     {
       "id": "kelolaservis",
@@ -55,7 +55,7 @@
       ],
       "world": "USER_SCRIPT",
       "runAt": "document_idle",
-      "sha256": "2dabba2af9e5429ba96c17a5d6937f6b9450525cf20aed5ccd75b5bb7e5cda6c"
+      "sha256": "917705445b700d7cb2af9b6c45d547023604cdb6a782af7d35fab267b086e65a"
     },
     {
       "id": "pemindahan",
@@ -69,7 +69,7 @@
       ],
       "world": "MAIN",
       "runAt": "document_idle",
-      "sha256": "9cddeed966ff29342c0256d611e291a9f57c09b596c097ca040f6dba9e6c652e"
+      "sha256": "7044473e6db0ec6b577c894e203452a647d483378694a8f23993b1523adf670f"
     },
     {
       "id": "servisindex",
@@ -85,7 +85,7 @@
       ],
       "world": "USER_SCRIPT",
       "runAt": "document_idle",
-      "sha256": "7dcff846081b1f121156652f6e7bb46561181dddb978ae9f122b63e6cd0bf3ca"
+      "sha256": "1c8dc241676b96c2c50830a4af1670a7d6c9d972a2fc8ec5444f8099bd37778a"
     },
     {
       "id": "pesanan_web",
@@ -99,7 +99,7 @@
       ],
       "world": "USER_SCRIPT",
       "runAt": "document_idle",
-      "sha256": "667b24967fde8dbdc6bc4db3db7c75c094df0f79d8bdd580737334803590bf7e"
+      "sha256": "22977ce065c2f5c2ec624935079d14e78b486a087f7cde834437fccfc368bf84"
     },
     {
       "id": "olzap",
@@ -113,7 +113,7 @@
       ],
       "world": "MAIN",
       "runAt": "document_start",
-      "sha256": "15e05eccc94e4104ee4d9e37a6c161bb6c9ab92a05b35a0f2a831fc2eba89789"
+      "sha256": "14214aa776dafc3712ab1781636122ceda0b1c43cd5c7894353e682f09d57797"
     },
     {
       "id": "rekapservis",
@@ -127,7 +127,7 @@
       ],
       "world": "USER_SCRIPT",
       "runAt": "document_idle",
-      "sha256": "65d222c1eb322fa5c5d3538b5c97519e402caa42daa9013e33bfc86ccc42062f"
+      "sha256": "0ebd5e247bedb42d0ede680adc8961d91c48f948dd424b961ebbc47a72026453"
     },
     {
       "id": "halo",
@@ -136,7 +136,7 @@
       "versi": "1.0.0",
       "deskripsi": "Contoh script popup: menampilkan sapaan dan waktu.",
       "file": "halo.js",
-      "sha256": "6b1ffb9f4615e2ed165b8c25adbd6eeb03ea02b9f54ff36c5a04b02cdbce368a"
+      "sha256": "4361e7c2efc31259fa8fba47ee5deb9947905c070e56876915fe9c10321011c5"
     },
     {
       "id": "tombol_so_list",
@@ -150,7 +150,7 @@
       ],
       "world": "USER_SCRIPT",
       "runAt": "document_idle",
-      "sha256": "3bdbc7ce2f9813a39e5456a47ac7229c2dd42c419c1f543a16e55318e4fd1d80"
+      "sha256": "5e5688992a716d7af7ec73641d99334f27fad956892c7079b6a67e5387a91665"
     },
     {
       "id": "info",
@@ -159,7 +159,7 @@
       "versi": "1.0.0",
       "deskripsi": "Contoh script popup: menampilkan info layar dan bahasa.",
       "file": "info.js",
-      "sha256": "11fca2f886ad852226d5aa4aa3a66c28a0b81cfec99df77c893af6c807c751da"
+      "sha256": "52410348edcd3d205ed9d81f067ec9c159aefd463b6d2fd1db5e03a0b1b42f2c"
     },
     {
       "id": "rakstok",
@@ -174,7 +174,7 @@
       ],
       "world": "USER_SCRIPT",
       "runAt": "document_idle",
-      "sha256": "db5ef4a5d99c05d5fe90a0479f92c97f953780f150fc7e1b30243a077e04a175"
+      "sha256": "8c5ccd3ad4f3069d90a25e569aefc0cc58e9353d746c13cc4fb372574490f62d"
     },
     {
       "id": "rak_barang",
@@ -188,7 +188,7 @@
       ],
       "world": "USER_SCRIPT",
       "runAt": "document_idle",
-      "sha256": "30b48c4183e68f5196a85809a132dfdfdb379acd5902309e496414c739527684"
+      "sha256": "1d0f7c6472ae814ac48f09728f8fb222974491e3f9d1bc8cd4b52cfc63ead928"
     },
     {
       "id": "smart_repair",
@@ -202,8 +202,8 @@
       ],
       "world": "USER_SCRIPT",
       "runAt": "document_idle",
-      "sha256": "4aead2e83010ad05bac31f01e560c53a37fe4fe1b8b3718e447568c1be84e81b"
+      "sha256": "fbe6043bd08e3bb4536d18588d2eee20a8bc77d1a6a7f16526d03df99ee27974"
     }
   ],
-  "tandatangan": "mk9v9vzzgz59etP2MtcA0JkC7BT6f0facec5JAfHJSA2NiZUop/v9/ODC5HwO8JTFrSjRuZQvZFzm/rf7Btt8Q=="
+  "tandatangan": "djpSSSnTamuZ0WrH754wusKeAHjjSwZhh2NiRzplM+yxIIMz4sTTatr6I8axl3W00GOSV8hoW7Thvpc41lWQOg=="
 }

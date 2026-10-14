@@ -154,9 +154,18 @@ async function syncScriptsInti() {
   const sudah = (await chrome.userScripts.getScripts()).filter((s) => s.id.startsWith(PREFIX));
   const target = new Set();
   const versi = {};
+  // Sync berjalan tiap menit: script yang kodenya (SHA-256) dan pengaturannya tidak berubah tidak diunduh/didaftarkan ulang.
+  const kunciLama = ((await getStatus()) || {}).kunci || {};
+  const kunciBaru = {};
+  const kunciDari = (x) => (x.sha256 ? x.sha256 + "|" + JSON.stringify([x.matches, x.runAt, x.world]) : "");
   for (const s of daftar) {
     if (mati.has(s.id)) continue;
     if ((await originsDibutuhkan([s])).length) { lap.lewat.push(s.id); continue; }
+    const kunci = kunciDari(s);
+    if (kunci && kunciLama[s.id] === kunci && sudah.some((x) => x.id === PREFIX + s.id)) {
+      target.add(PREFIX + s.id); lap.ok.push(s.id); versi[s.id] = s.versi; kunciBaru[s.id] = kunci;
+      continue;
+    }
     try {
       const res = await ambilFile("scripts/" + s.file);
       if (!res.ok) throw new Error();
@@ -173,11 +182,12 @@ async function syncScriptsInti() {
       if (sudah.some((x) => x.id === def.id)) await chrome.userScripts.update([def]);
       else await chrome.userScripts.register([def]);
       target.add(def.id); lap.ok.push(s.id); versi[s.id] = s.versi;
+      if (kunci && keHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(code))) === s.sha256) kunciBaru[s.id] = kunci;   // hanya bila kode yang dipasang sama dengan katalog
     } catch { lap.lewat.push(s.id); }
   }
   const buang = sudah.filter((x) => !target.has(x.id)).map((x) => x.id);
   if (buang.length) { await chrome.userScripts.unregister({ ids: buang }); lap.hapus = buang; }
-  await setStatus({ waktu: Date.now(), versi, ok: lap.ok.length, lewat: lap.lewat.length, sumber: await sumberAktif() });
+  await setStatus({ waktu: Date.now(), versi, kunci: kunciBaru, ok: lap.ok.length, lewat: lap.lewat.length, sumber: await sumberAktif() });
   return lap;
 }
 

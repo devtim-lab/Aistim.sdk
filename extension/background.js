@@ -7,7 +7,7 @@ const X_FETCH_ALLOW = ["partdistro.com"]; // host yang boleh diakses lewat jemba
 
 function jadwal() {
   chrome.alarms.clear("devchain-sync");   // nama alarm lama
-  chrome.alarms.create(ALARM, { periodInMinutes: 10 });
+  chrome.alarms.create(ALARM, { periodInMinutes: 1 });   // cek pembaruan tiap menit (yang tidak berubah tidak diunduh ulang)
 }
 
 chrome.runtime.onInstalled.addListener(() => { jadwal(); syncScripts().catch(() => {}); });

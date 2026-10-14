@@ -8,6 +8,7 @@ on:
       - "scripts-src/**"
       - "tools/build-catalog.mjs"
       - "tools/build-scripts.mjs"
+      - "tools/perkecil.mjs"
       - "tools/tanda-tangan-katalog.mjs"
   workflow_dispatch:
 
@@ -23,9 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Pasang esbuild (Node bawaan runner, tanpa setup-node)
-        run: npm install --no-save --no-audit --no-fund esbuild@0.25.0
-      - name: Bangun katalog dan minify
+      - name: Bangun katalog dan perkecil script (tanpa memasang paket apa pun)
         run: node tools/build-scripts.mjs
       - name: Tanda tangani katalog (butuh secret KATALOG_KUNCI)
         env:

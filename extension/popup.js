@@ -103,6 +103,8 @@ async function cekHalaman() {
     if (!tab || !tab.id || !/^https:\/\/([^/]+\.)?erzap\.com\//.test(tab.url || "")) return;
     let r = null;
     try { r = await chrome.tabs.sendMessage(tab.id, { tipe: "aistim-aktif" }); } catch { r = null; }
+    // tab yang dibuka sebelum extension diperbarui masih memakai content script lama (nama pesan lama)
+    if (!r) { try { r = await chrome.tabs.sendMessage(tab.id, { tipe: "devchain-aktif" }); } catch { r = null; } }
     halaman = { url: tab.url, aktif: new Set(r && Array.isArray(r.aktif) ? r.aktif : []), terjangkau: !!r };
   } catch { halaman = null; }
 }
