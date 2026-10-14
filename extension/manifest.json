@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Aistim Tool",
-  "version": "3.19.1",
-  "description": "Manajer script gaya Tampermonkey untuk Erzap: login dengan private key, hak akses per akun, sinkron otomatis.",
+  "version": "3.20.1",
+  "description": "Manajer script gaya Tampermonkey untuk Erzap: sinkron otomatis dari GitHub (terverifikasi).",
   "action": {
     "default_title": "Aistim Tool",
     "default_popup": "popup.html",

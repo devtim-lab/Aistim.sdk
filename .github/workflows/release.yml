@@ -27,14 +27,11 @@ jobs:
           fi
           echo "VERSION=$V" >> "$GITHUB_ENV"
 
-      - name: Perbarui katalog script dari header
-        run: node tools/build-catalog.mjs
-
       - name: Buat zip extension
         run: |
           cd extension
-          # zip ringan: tanpa script (script diambil per akun lewat paket terenkripsi saat login)
-          zip -qr "../aistim-tool-extension-v${VERSION}.zip" . -x "scripts/*"
+          # zip lengkap: script ikut sebagai salinan bawaan (cadangan bila GitHub tak terjangkau)
+          zip -qr "../aistim-tool-extension-v${VERSION}.zip" .
 
       - name: Buat Release
         env:
@@ -43,7 +40,7 @@ jobs:
           cat > catatan.md <<EOT
           Extension Chrome Aistim Tool v${VERSION}.
 
-          Zip ini hanya berisi kode extension; script diunduh otomatis saat login sesuai akun.
+          Zip berisi kode extension beserta salinan bawaan semua script. Script diperbarui otomatis dari GitHub (hanya dipakai bila tanda tangan katalog dan hash filenya sah).
 
           Cara pasang manual:
           1. Unduh \`aistim-tool-extension-v${VERSION}.zip\` di bawah, lalu ekstrak ke satu folder.

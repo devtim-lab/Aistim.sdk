@@ -10,12 +10,7 @@
     <header>
       <img src="icons/48.png" width="32" height="32" alt="" id="logo">
       <h1>Aistim <span>Tool</span> <small id="ver"></small></h1>
-      <button id="sync" type="button" aria-label="Sinkronkan script" title="Sinkronkan script" hidden>
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
-      </button>
-      <button id="logout" type="button" aria-label="Keluar" title="Keluar" hidden>
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
-      </button>
+      <span id="profil" role="img" aria-label="Aistim Tool" title="Aistim Tool"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.5"/><path d="M3 22c0-5.5 4-8 9-8s9 2.500 9 8z"/></svg></span>
     </header>
 
     <section id="view-memuat" role="status" aria-live="polite">
@@ -23,40 +18,14 @@
       <p>Memuat...</p>
     </section>
 
-    <section id="view-login" hidden>
-      <form id="form-login" novalidate>
-        <p class="sub">Masukkan private key akunmu</p>
-        <label for="kunci">Private key (64 karakter hex)</label>
-        <div class="input-ikon">
-          <input id="kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="0x…" aria-describedby="msg" data-tempel>
-          <button id="lihat-kunci" type="button" class="ikon-dalam" aria-label="Tampilkan private key" aria-pressed="false"><svg class="mata" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="mata-coret" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></button>
-        </div>
-        <p id="msg" role="status" aria-live="polite"></p>
-        <div id="belum" hidden>
-          <p class="kecil">Akun belum terdaftar. Kirim public key ini ke admin:</p>
-          <pre id="pub-kamu"></pre>
-          <button id="salin-pub" type="button" class="kecil-btn">Salin public key</button>
-        </div>
-        <button id="masuk" type="submit" class="utama">Masuk</button>
-        <p class="kecil">Private key hanya diproses di perangkat ini dan tidak disimpan atau dikirim ke mana pun.</p>
-      </form>
-    </section>
-
     <section id="view-user" hidden>
-      <p class="sub">Masuk sebagai <strong id="who"></strong> <em id="role"></em></p>
-
-      <div id="tabs" role="tablist" hidden>
-        <button id="tab-script" type="button" role="tab" aria-selected="true">Script</button>
-        <button id="tab-akses" type="button" role="tab" aria-selected="false">Akses</button>
-        <button id="tab-akun" type="button" role="tab" aria-selected="false">Akun</button>
-        <button id="tab-enkripsi" type="button" role="tab" aria-selected="false">Enkripsi</button>
-        <button id="tab-dekripsi" type="button" role="tab" aria-selected="false">Dekripsi</button>
-      </div>
-
       <div id="pane-script">
         <div id="engine" class="kartu">
           <span id="engine-dot" aria-hidden="true"></span>
           <div><strong id="engine-judul">Engine</strong><small id="engine-info"></small></div>
+          <button id="sync" type="button" aria-label="Sinkronkan script" title="Sinkronkan script" hidden>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
+      </button>
         </div>
         <p id="engine-halaman" hidden></p>
         <ol id="engine-help" hidden>
@@ -64,146 +33,18 @@
           <li>Nyalakan <b>Izinkan skrip pengguna</b>.</li>
           <li>Buka popup ini lagi, lalu tekan tombol sinkron.</li>
         </ol>
-        <input id="cari-script" type="search" placeholder="Cari script..." autocomplete="off" aria-label="Cari script">
+        <button id="buka-detail" type="button" hidden>Buka pengaturan extension</button>
+        <div id="cari-combo" class="cari">
+          <input id="cari-script" type="text" placeholder="Cari script..." autocomplete="off" role="combobox" aria-expanded="false" aria-controls="cari-list" aria-label="Cari script">
+          <button id="cari-buka" type="button" aria-label="Tampilkan daftar script" aria-expanded="false"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+          <ul id="cari-list" role="listbox" hidden></ul>
+        </div>
         <ul id="manager"></ul>
-        <p id="empty" hidden>Belum ada script yang bisa kamu akses.</p>
+        <p id="empty" hidden>Belum ada script.</p>
         <p id="pesan" role="status"></p>
-      </div>
-
-      <div id="pane-akun" hidden>
-        <p class="kecil"><span id="jumlah-akun">0</span> akun terdaftar</p>
-        <ul id="daftar-akun"></ul>
-      </div>
-
-      <div id="pane-enkripsi" hidden>
-        <p class="judul">Enkripsi teks</p>
-        <label for="e-teks">Data</label>
-        <textarea id="e-teks" rows="3" spellcheck="false" autocomplete="off" data-tempel></textarea>
-        <label for="e-kunci">Private key (opsional, ikut jadi penerima)</label>
-        <input id="e-kunci" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Tempel atau buat key baru" data-tempel>
-        <button id="e-buat-key" type="button" class="kecil-btn">Buat private key baru</button>
-        <p class="kecil">Setiap penerima membuka teks dengan private key miliknya sendiri. Kolom kosong dan tanpa penerima: key baru dibuat otomatis.</p>
-        <p class="judul">Penerima lain</p>
-        <div id="e-penerima" class="izin"></div>
-        <button id="e-enkripsi" type="button" class="utama">Enkripsi</button>
-        <textarea id="e-hasil" rows="3" readonly hidden></textarea>
-        <button id="e-salin" type="button" class="kecil-btn" hidden>Salin hasil</button>
-
-        <p id="e-msg" class="kecil" role="status"></p>
-      </div>
-
-      <div id="pane-dekripsi" hidden>
-        <p class="judul">Dekripsi teks</p>
-        <label for="d-kunci">Private key</label>
-        <input id="d-kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Tempel private key" data-tempel>
-        <label for="d-teks">Teks terenkripsi</label>
-        <textarea id="d-teks" rows="3" spellcheck="false" autocomplete="off" data-tempel></textarea>
-        <button id="d-dekripsi" type="button" class="utama">Dekripsi</button>
-        <textarea id="d-hasil" rows="3" readonly hidden></textarea>
-        <p id="d-msg" class="kecil" role="status"></p>
-      </div>
-
-      <div id="pane-akses" hidden>
-        <label for="akun">Akun</label>
-        <div class="row">
-          <div class="combo">
-            <input id="akun" type="text" role="combobox" autocomplete="off" spellcheck="false"
-                   placeholder="Cari akun..." aria-controls="akun-list" aria-autocomplete="list" aria-expanded="false">
-            <ul id="akun-list" role="listbox" hidden></ul>
-          </div>
-          <button id="tambah-akun" type="button" aria-label="Tambah akun" aria-expanded="false">+</button>
-        </div>
-
-        <form id="form-tambah" class="modal" hidden novalidate>
-          <div class="kotak kotak-tambah">
-            <div class="kepala"><h2>Tambah akun</h2><button id="t-tutup" type="button" aria-label="Tutup">&times;</button></div>
-            <div class="isi">
-              <label for="t-nama">Nama</label>
-              <input id="t-nama" type="text" autocomplete="off" maxlength="40" spellcheck="false">
-              <label for="t-pub">Public key (66 karakter hex)</label>
-              <input id="t-pub" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="02… atau 03…" data-tempel>
-              <button id="t-buat-key" type="button" class="kecil-btn">Buat key baru</button>
-              <div id="key-baru" hidden>
-                <p class="kecil">Private key akun baru. Simpan sekarang, tidak akan ditampilkan lagi:</p>
-                <pre id="key-baru-isi"></pre>
-                <button id="salin-key" type="button" class="kecil-btn">Salin private key</button>
-              </div>
-              <p class="judul">Role</p>
-              <label class="saklar"><input id="t-admin-role" type="checkbox"><span class="geser" aria-hidden="true"></span><span><strong>Admin</strong> <small>akses semua script, bisa mengatur akun</small></span></label>
-              <div id="t-bagian-izin">
-                <p class="judul">Akses script</p>
-                <div id="t-izin" class="izin"></div>
-              </div>
-              <p id="t-msg" role="status"></p>
-            </div>
-            <div class="kaki">
-              <button id="t-batal" type="button">Batal</button>
-              <button id="t-buat" type="submit" class="utama">Buat akun</button>
-            </div>
-          </div>
-        </form>
-
-        <div id="terpilih" hidden>
-          <p class="judul">Akses script untuk <strong id="terpilih-nama"></strong></p>
-          <div id="izin" class="izin"></div>
-          <div id="aksi-akun" class="row" hidden>
-            <button id="simpan-akses" type="button" class="utama" hidden>Simpan akses</button>
-            <button id="hapus-akun" type="button" class="bahaya">Hapus akun</button>
-          </div>
-        </div>
-        <div id="hasil-vault" hidden>
-          <p id="vmsg" class="kecil"></p>
-          <button id="v-upload" type="button" class="utama" hidden>Simpan &amp; upload ke GitHub</button>
-        </div>
-        <p id="akun-kosong" class="kecil" hidden>Daftar akun kosong. Buat akun lewat tombol +.</p>
       </div>
     </section>
   </main>
-  <div id="modal-ganti" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="g-judul">
-    <div class="kotak">
-      <h2 id="g-judul">Ubah akun</h2>
-      <label for="g-nama">Nama</label>
-      <input id="g-nama" type="text" autocomplete="off" maxlength="40" spellcheck="false">
-      <p class="judul">Ganti key (kosongkan bila tidak diganti)</p>
-      <button id="g-buat" type="button" class="kecil-btn">Buat key baru</button>
-      <div id="g-key" hidden>
-        <p class="kecil">Private key baru. Simpan sekarang, tidak akan ditampilkan lagi:</p>
-        <pre id="g-key-isi"></pre>
-        <button id="g-salin" type="button" class="kecil-btn">Salin private key</button>
-      </div>
-      <label for="g-pub">Public key baru (66 karakter hex)</label>
-      <input id="g-pub" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="02… atau 03…" data-tempel>
-      <p id="g-msg" class="kecil" role="status"></p>
-      <div class="row">
-        <button id="g-batal" type="button">Batal</button>
-        <button id="g-simpan" type="button" class="utama">Simpan</button>
-      </div>
-    </div>
-  </div>
-  <div id="modal-hasil" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mh-judul">
-    <div class="kotak">
-      <h2 id="mh-judul">Hasil</h2>
-      <textarea id="mh-isi" rows="6" readonly spellcheck="false"></textarea>
-      <p id="mh-msg" class="kecil" role="status"></p>
-      <div class="row">
-        <button id="mh-tutup" type="button">Tutup</button>
-        <button id="mh-salin" type="button" class="utama">Salin</button>
-      </div>
-    </div>
-  </div>
-  <div id="modal-upload" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mu-judul">
-    <div class="kotak">
-      <h2 id="mu-judul">Upload perubahan akun</h2>
-      <p class="kecil">Perubahan ditandatangani dengan private key admin, lalu dikirim ke GitHub.</p>
-      <label for="mu-kunci">Private key admin</label>
-      <input id="mu-kunci" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Tempel private key admin" data-tempel>
-      <p id="mu-msg" class="kecil" role="status"></p>
-      <div class="row">
-        <button id="mu-batal" type="button">Batal</button>
-        <button id="mu-kirim" type="button" class="utama">Upload</button>
-      </div>
-    </div>
-  </div>
   <div id="menu-tempel" hidden role="menu"><button type="button" data-aksi="tempel">Tempel</button><button type="button" data-aksi="salin">Salin</button><button type="button" data-aksi="potong">Potong</button><button type="button" data-aksi="semua">Pilih semua</button></div>
   <button id="salin-pilihan" type="button" hidden>Salin teks terpilih</button>
   <script type="module" src="popup.js"></script>

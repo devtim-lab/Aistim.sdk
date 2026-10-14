@@ -1,24 +1,20 @@
 # Aistim.sdk
 
-Extension Chrome **Aistim Tool** (Manifest V3): login dengan private key secp256k1 dan
-menjalankan userscript lewat `chrome.userScripts`.
+Extension Chrome **Aistim Tool** (Manifest V3): manajer userscript gaya Tampermonkey yang menjalankan script lewat
+`chrome.userScripts`. Tidak ada login: semua script di katalog bisa dinyalakan atau dimatikan satu per satu.
 
-Folder `extension/` siap dimuat di `chrome://extensions` (Developer mode → Load unpacked).
-`extension/kunci.js` adalah hasil bundle modul enkripsi (dibuat dari proyek devchain).
+Folder `extension/` siap dimuat di `chrome://extensions` (Developer mode → Load unpacked), lalu nyalakan **Izinkan skrip pengguna** di halaman Detail.
 
 ## Script
 
 Sumber script ada di `scripts-src/` (header `// ==UserScript==` gaya Tampermonkey). Setelah push ke `main`:
 
-1. Workflow **Minify scripts** membuat versi kecil di `extension/scripts/` (lengkap dengan `index.json`).
-2. Workflow **Bangun paket script per akun** membuat satu paket terenkripsi per akun (hanya script yang boleh dipakai akun itu) dan menyimpannya di repo `Auth` (`paket/<addr>.bin`).
-3. Extension mengunduh paket akunnya saat login dan memeriksa pembaruan setiap sinkron.
+1. Workflow **Minify scripts** membuat versi kecil di `extension/scripts/` (lengkap dengan `index.json`) dan menandatangani katalognya (lihat bagian terakhir).
+2. Extension mengambil katalog dan script dari GitHub (terverifikasi) dan memakai salinan bawaan bila gagal.
 
 Jadi menambah atau mengubah script tidak perlu rilis extension baru. Jangan mengedit `extension/scripts/` langsung, karena akan ditimpa.
 
-Workflow paket butuh secret `AUTH_TOKEN` (tulis ke repo Auth) dan `PAKET_SEED` (string acak, bahan kunci paket). Setelah mengubah akses akun di `akun.json`, jalankan workflow paket sekali (Actions → Run workflow).
-
-Release (`release.yml`) membuat zip ringan tanpa folder `scripts`.
+Release (`release.yml`) membuat zip lengkap, termasuk salinan bawaan semua script.
 
 ## Rilis
 
@@ -32,8 +28,14 @@ Atau tanpa terminal: tab Actions → Release extension → Run workflow (tag `v<
 
 Workflow `release.yml` membuat Release berisi `aistim-tool-extension-v<versi>.zip` yang bisa diunduh dan dipasang manual.
 
-## Akun dan login
+## Sinkron script dari GitHub (terverifikasi)
 
-`extension/akun.json` berisi daftar akun (`nama`, `addr`, `pub`, `role`, `script`). Saat login, private key menandatangani `aistim-login:jmgenkikiinjmkjebhgbgilfjgifnbbl` (ID tetap, tidak bergantung ID extension yang terpasang) di memori, alamat dipulihkan dari signature, lalu dicocokkan dengan `addr`. Signature dan key tidak disimpan.
+Extension mengambil `extension/scripts/index.json` dan tiap script dari `raw.githubusercontent.com/devtim-lab/Aistim.sdk/main/extension/scripts/`,
+tetapi hanya memakainya bila **tanda tangan katalog sah** (ECDSA P-256, kunci publik ada di `extension/sync.js`) dan **SHA-256 tiap file cocok**
+dengan katalog. Kalau tidak, dipakai salinan bawaan di dalam extension. Popup menampilkan sumbernya ("GitHub ✓" atau "bawaan").
 
-Membangun `extension/alamat.js` (hanya perlu bila `tools/alamat.src.mjs` berubah): pasang `@noble/secp256k1@2.2.3`, `@noble/hashes@1.8.0` dan `esbuild`, lalu `esbuild tools/alamat.src.mjs --bundle --minify --format=esm --outfile=extension/alamat.js`.
+- Buat kunci (sekali): `node tools/tanda-tangan-katalog.mjs --buat-kunci <jalur/di/luar/repo/katalog-kunci.pem>`; tempel kunci publik yang dicetak ke `KUNCI_VERIF` di `extension/sync.js`.
+- Tanda tangani setelah `node tools/build-scripts.mjs`: `node tools/tanda-tangan-katalog.mjs <katalog-kunci.pem>`; periksa: `node tools/tanda-tangan-katalog.mjs --cek`.
+- Di GitHub Actions: isi secret `KATALOG_KUNCI` dengan isi berkas `.pem` (workflow Minify scripts menandatangani otomatis). Tanpa secret itu katalog tidak bertanda tangan dan extension memakai salinan bawaan.
+- **Kunci pribadi jangan pernah di-commit.** Kalau hilang, katalog baru tidak bisa ditandatangani sampai kunci publik di extension diganti lewat rilis baru.
+

@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         devtool
+// @name         Devtool
 // @namespace    http://tampermonkey.net/
-// @version      1.4.1
-// @description  [v1.4.1] Hasil rekaman memuat struktur halaman (tabel, filter, kata 'website'). Tombol merekam klik & request (fetch/XHR) di SEMUA halaman Erzap untuk dikirim ke developer. TERSEMBUNYI secara default: aktif hanya setelah buka halaman dengan ?rekam=1 (matikan lagi dengan ?rekam=0). Token/cookie tidak ikut direkam.
+// @version      1.4.2
+// @description  [v1.4.2] Hasil rekaman memuat struktur halaman (tabel, filter, kata 'website'). Tombol merekam klik & request (fetch/XHR) di SEMUA halaman Erzap untuk dikirim ke developer. TERSEMBUNYI secara default: aktif hanya setelah buka halaman dengan ?rekam=1 (matikan lagi dengan ?rekam=0). Token/cookie tidak ikut direkam.
 // @match        https://*.erzap.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erzap.com
 // @world        main

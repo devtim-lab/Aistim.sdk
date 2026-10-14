@@ -2,10 +2,11 @@
 // situs ikut terbawa tanpa mengunduh ulang extension.
 import { syncScripts } from "./sync.js";
 
-const ALARM = "devchain-sync";
+const ALARM = "aistim-sync";
 const X_FETCH_ALLOW = ["partdistro.com"]; // host yang boleh diakses lewat jembatan x-fetch
 
 function jadwal() {
+  chrome.alarms.clear("devchain-sync");   // nama alarm lama
   chrome.alarms.create(ALARM, { periodInMinutes: 10 });
 }
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Erzap - Pesanan Web (Lonceng)
 // @namespace    http://tampermonkey.net/
-// @version      1.26.0
+// @version      1.26.2
 // @description  Tombol lonceng melayang (FAB, bisa digeser) di halaman Erzap: daftar nota pesanan dari web (partdistro) yang nomor fakturnya berpola 1XXXXXXXXXXX-ddMMyyJJmm dan badge jumlah nota baru.
 // @match        https://*.erzap.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erzap.com
@@ -111,6 +111,8 @@
     let audioCtx = null;
     function siapkanAudio() {
         try {
+            // Jangan membuat AudioContext sebelum halaman pernah disentuh (Chrome menolak dan mencatat peringatan)
+            if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
         } catch (e) { /* tidak didukung */ }
@@ -151,7 +153,8 @@
     function bunyi() {
         try {
             siapkanAudio();
-            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            // Chrome memblokir getar (dan mencatat peringatan) sebelum pengguna menyentuh halaman
+            if (navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive) navigator.vibrate([200, 100, 200]);
             if (!ucapkan(KATA_BUNYI)) bip();
         } catch (e) { /* abaikan */ }
     }

@@ -2,19 +2,17 @@
 // Dipakai popup (saat tombol ditekan) dan service worker (berkala), jadi
 // script yang diubah admin di situs ikut berubah tanpa mengunduh extension.
 //
-// Keamanan: hanya script dari katalog situs, hanya untuk akun yang
-// berhak, dan hanya untuk pola situs spesifik (tanpa wildcard host penuh).
+// Keamanan: hanya script dari katalog bertanda tangan (atau salinan bawaan), dan hanya untuk pola situs
+// spesifik (tanpa wildcard host penuh).
 // Situs erzap.com sudah diizinkan lewat manifest; situs lain meminta izin
 // saat togel dinyalakan. Pengguna harus mengaktifkan "Izinkan skrip pengguna".
 // Script berjalan secara bawaan (bisa dimatikan satu per satu).
 
-export const BASE = "https://devchain.web.app";
-export const PLAN_KEY = "devchain.plan";
-export const OFF_KEY = "devchain.mati";
-export const HIDE_KEY = "devchain.sembunyi";
-export const STAT_KEY = "devchain.status";
-import { bukaDenganKunci, bacaZip } from "./paket.js";
-const PREFIX = "devchain-";
+export const OFF_KEY = "aistim.mati";
+export const HIDE_KEY = "aistim.sembunyi";
+export const STAT_KEY = "aistim.status";
+const PREFIX = "aistim-";
+const PREFIX_LAMA = "devchain-";   // nama lama (sebelum diganti Aistim): dibersihkan saat sync
 const MAX_CODE = 4 * 1024 * 1024;
 const MATCH_RE = /^https?:\/\/(\*\.)?[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d+)?\/.*$/i;
 const RUN_AT = new Set(["document_start", "document_end", "document_idle"]);
@@ -23,17 +21,10 @@ export function validMatches(m) {
   return Array.isArray(m) && m.length > 0 && m.length <= 20 && m.every((x) => typeof x === "string" && MATCH_RE.test(x));
 }
 
-export function injectable(s, plan) {
+export function injectable(s) {
   if (!s || s.tipe !== "inject" || !/^[a-z0-9_-]+$/.test(s.id) || !/^[a-z0-9_-]+\.js$/.test(s.file)) return false;
   if (!validMatches(s.matches)) return false;
-  return !!plan && (plan.admin || (plan.ids || []).includes(s.id));
-}
-
-export async function getPlan() {
-  try { return (await chrome.storage.local.get(PLAN_KEY))[PLAN_KEY] || null; } catch { return null; }
-}
-export async function setPlan(plan) {
-  try { await chrome.storage.local.set({ [PLAN_KEY]: plan }); } catch { /* di luar extension */ }
+  return true;
 }
 
 /** id script yang dimatikan pengguna lewat togel (bawaan: semua nyala). */
@@ -59,40 +50,79 @@ async function setStatus(v) {
   try { await chrome.storage.local.set({ [STAT_KEY]: v }); } catch { /* di luar extension */ }
 }
 
-export const PAKET_KEY = "devchain.paket";   // paket script akun ini (sudah didekripsi saat login): { ver, files }
-export async function getPaket() {
-  try { return (await chrome.storage.local.get(PAKET_KEY))[PAKET_KEY] || null; } catch { return null; }
-}
-export async function setPaket(v) {
-  try { await chrome.storage.local.set({ [PAKET_KEY]: v }); } catch { /* di luar extension */ }
+// ---- Sumber script dari GitHub, diverifikasi: tanda tangan katalog (ECDSA P-256) + SHA-256 tiap file ----
+// Script hanya dipakai kalau katalognya ditandatangani kunci pemilik dan hash filenya cocok.
+// Kalau GitHub tak terjangkau atau verifikasi gagal, dipakai salinan bawaan di dalam extension.
+const SUMBER = "https://raw.githubusercontent.com/devtim-lab/Aistim.sdk/main/extension/scripts/";
+const KUNCI_VERIF = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjjmlHJGsGqYr2uyEVEMBpygmhKnVuSHBZ8UgkhWAsz2ejGYG9LUNbyGbTVBgbFu7GwWbU0FHie4aiw07ig4f8w==";   // kunci publik (SPKI base64); kunci pribadinya dipegang pemilik, tidak ada di repo
+const dariB64 = (t) => Uint8Array.from(atob(t), (c) => c.charCodeAt(0));
+const keHex = (buf) => [...new Uint8Array(buf)].map((x) => x.toString(16).padStart(2, "0")).join("");
+
+/** Kembalikan katalog (objek) bila tanda tangannya sah, selain itu null. */
+export async function verifikasiKatalog(teks) {
+  try {
+    const d = JSON.parse(teks);
+    if (!d || !Array.isArray(d.scripts) || typeof d.tandatangan !== "string") return null;
+    const kunci = await crypto.subtle.importKey("spki", dariB64(KUNCI_VERIF), { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+    const sah = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, kunci, dariB64(d.tandatangan), new TextEncoder().encode(JSON.stringify(d.scripts)));
+    return sah ? d : null;
+  } catch { return null; }
 }
 
-export async function clearPlan() {
-  try { await chrome.storage.local.remove([PLAN_KEY, OFF_KEY, HIDE_KEY, STAT_KEY, PAKET_KEY]); } catch { /* di luar extension */ }
+let remote = { waktu: 0, katalog: null, teks: "" };
+async function katalogRemote() {
+  if (Date.now() - remote.waktu < 60000) return remote;
+  remote = { waktu: Date.now(), katalog: null, teks: "" };
+  try {
+    const r = await fetch(SUMBER + "index.json?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(8000) });
+    if (r.ok) {
+      const teks = await r.text();
+      const katalog = await verifikasiKatalog(teks);
+      if (katalog) remote = { waktu: Date.now(), katalog, teks };
+    }
+  } catch { /* pakai salinan bawaan */ }
+  return remote;
 }
 
-/** Ambil file extension: dari paket akun (didekripsi saat login), kalau tidak ada dari salinan di dalam extension. */
-export async function ambilFile(path) {
+/** Teks script dari GitHub bila hash-nya cocok dengan katalog bertanda tangan; selain itu null. */
+async function fileRemote(nama) {
+  const { katalog } = await katalogRemote();
+  const s = katalog && katalog.scripts.find((x) => x.file === nama);
+  if (!s || !/^[0-9a-f]{64}$/.test(s.sha256 || "")) return null;
+  try {
+    const r = await fetch(SUMBER + nama + "?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(15000) });
+    if (!r.ok) return null;
+    const bytes = await r.arrayBuffer();
+    if (keHex(await crypto.subtle.digest("SHA-256", bytes)) !== s.sha256) return null;
+    return new TextDecoder().decode(bytes);
+  } catch { return null; }
+}
+
+export async function sumberAktif() { return (await katalogRemote()).katalog ? "github" : "bawaan"; }
+
+/** Ambil file extension: dari GitHub (terverifikasi tanda tangan + hash) bila bisa, kalau tidak dari salinan di dalam extension. */
+export async function ambilFile(path, lokal = false) {
   const rel = path.replace(/^\//, "");
-  if (rel.startsWith("scripts/")) {
-    const p = await getPaket();
-    const t = p && p.files && p.files[rel.slice(8)];
-    if (typeof t === "string") return new Response(t, { status: 200, headers: { "Content-Type": rel.endsWith(".json") ? "application/json" : "text/javascript" } });
+  if (!lokal && rel.startsWith("scripts/")) {
+    const nama = rel.slice(8);
+    const teks = nama === "index.json" ? (await katalogRemote()).teks : await fileRemote(nama);
+    if (teks) return new Response(teks, { status: 200, headers: { "Content-Type": nama.endsWith(".json") ? "application/json" : "text/javascript" } });
   }
   return fetch(chrome.runtime.getURL(rel));
 }
 
-async function fetchJson(path) {
-  // Katalog dan script: dari paket akun, kalau tidak ada dari salinan di extension
-  const res = await ambilFile(path);
+async function fetchJson(path, lokal = false) {
+  // Katalog dan script: dari GitHub yang terverifikasi, kalau tidak ada dari salinan di extension
+  const res = await ambilFile(path, lokal);
   if (!res.ok) throw new Error(path + " " + res.status);
   return res.json();
 }
 
-/** Katalog script injeksi yang boleh dipakai akun ini. */
-export async function katalogInject(plan) {
-  const data = await fetchJson("/scripts/index.json");
-  return (Array.isArray(data.scripts) ? data.scripts : []).filter((s) => injectable(s, plan));
+/** Katalog script injeksi yang boleh dijalankan. */
+/** lokal=true: hanya salinan di dalam extension (cepat, tanpa jaringan). */
+export async function katalogInject(lokal = false) {
+  const data = await fetchJson("/scripts/index.json", lokal);
+  return (Array.isArray(data.scripts) ? data.scripts : []).filter((s) => injectable(s));
 }
 
 export function userScriptsReady() {
@@ -111,33 +141,16 @@ export async function originsDibutuhkan(daftar) {
   return kurang;
 }
 
-/** Periksa paket terbaru di repo Auth; bila versinya berubah, unduh dan buka dengan kunci paket yang tersimpan. */
-export async function segarkanPaket() {
-  try {
-    const p = await getPaket();
-    if (!p || !p.k || !p.addr) return false;
-    const base = "https://raw.githubusercontent.com/devtim-lab/Auth/main/paket/";
-    const v = await (await fetch(base + "versi.json?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(4000) })).json();
-    const baru = v[p.addr];
-    if (!baru || baru === p.ver) return false;
-    const r = await fetch(base + p.addr + ".bin?t=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(15000) });
-    if (!r.ok) return false;
-    const files = bacaZip(await bukaDenganKunci(p.k, new Uint8Array(await r.arrayBuffer())));
-    await setPaket({ ...p, ver: baru, files });
-    return true;
-  } catch { return false; }
-}
-
 /** Daftarkan script yang berhak dan menyala; hapus yang sudah tidak. */
 async function syncScriptsInti() {
-  await segarkanPaket();
-  const plan = await getPlan();
+  await migrasiKunci();
   const lap = { ok: [], lewat: [], hapus: [], error: "" };
-  if (!plan) { await clearScripts(); return lap; }
   if (!userScriptsReady()) { lap.error = "izin-skrip"; return lap; }
   let daftar;
-  try { daftar = await katalogInject(plan); } catch { lap.error = "jaringan"; return lap; }
+  try { daftar = await katalogInject(); } catch { lap.error = "jaringan"; return lap; }
   const mati = new Set([...(await getOff()), ...(await getSembunyi())]);
+  const lama = (await chrome.userScripts.getScripts()).filter((s) => s.id.startsWith(PREFIX_LAMA)).map((s) => s.id);
+  if (lama.length) await chrome.userScripts.unregister({ ids: lama });
   const sudah = (await chrome.userScripts.getScripts()).filter((s) => s.id.startsWith(PREFIX));
   const target = new Set();
   const versi = {};
@@ -153,7 +166,7 @@ async function syncScriptsInti() {
         id: PREFIX + s.id,
         matches: s.matches,
         // penanda di DOM supaya popup bisa memeriksa script mana yang benar-benar aktif di halaman
-        js: [{ code: `(function(){try{var d=document.documentElement,a=(d.getAttribute("data-devchain")||"").split(",").filter(Boolean);if(a.indexOf(${JSON.stringify(s.id)})<0)a.push(${JSON.stringify(s.id)});d.setAttribute("data-devchain",a.join(","));}catch(e){}})();` }, { code }],
+        js: [{ code: `(function(){try{var d=document.documentElement,a=(d.getAttribute("data-aistim")||"").split(",").filter(Boolean);if(a.indexOf(${JSON.stringify(s.id)})<0)a.push(${JSON.stringify(s.id)});d.setAttribute("data-aistim",a.join(","));}catch(e){}})();` }, { code }],
         runAt: RUN_AT.has(s.runAt) ? s.runAt : "document_idle",
         world: s.world === "MAIN" ? "MAIN" : "USER_SCRIPT",
       };
@@ -164,13 +177,27 @@ async function syncScriptsInti() {
   }
   const buang = sudah.filter((x) => !target.has(x.id)).map((x) => x.id);
   if (buang.length) { await chrome.userScripts.unregister({ ids: buang }); lap.hapus = buang; }
-  await setStatus({ waktu: Date.now(), versi, ok: lap.ok.length, lewat: lap.lewat.length });
+  await setStatus({ waktu: Date.now(), versi, ok: lap.ok.length, lewat: lap.lewat.length, sumber: await sumberAktif() });
   return lap;
+}
+
+/** Salin data bernama lama ("devchain.*") ke nama baru ("aistim.*") sekali; hapus sisa data login/paket yang sudah tidak dipakai. */
+export async function migrasiKunci() {
+  const peta = { "devchain.mati": "aistim.mati", "devchain.sembunyi": "aistim.sembunyi", "devchain.status": "aistim.status" };
+  const sisa = ["devchain.session", "devchain.plan", "devchain.paket", "aistim.session", "aistim.plan", "aistim.paket"];
+  try {
+    const lama = await chrome.storage.local.get(Object.keys(peta));
+    const baru = {};
+    for (const [k, v] of Object.entries(lama)) if (v !== undefined) baru[peta[k]] = v;
+    if (Object.keys(baru).length) await chrome.storage.local.set(baru);
+    await chrome.storage.local.remove([...Object.keys(peta), ...sisa]);
+    await chrome.storage.session.remove(["aistim.tok", "aistim.toksdk"]);
+  } catch { /* di luar extension */ }
 }
 
 export async function clearScripts() {
   if (!userScriptsReady()) return;
-  const ids = (await chrome.userScripts.getScripts()).filter((s) => s.id.startsWith(PREFIX)).map((s) => s.id);
+  const ids = (await chrome.userScripts.getScripts()).filter((s) => s.id.startsWith(PREFIX) || s.id.startsWith(PREFIX_LAMA)).map((s) => s.id);
   if (ids.length) await chrome.userScripts.unregister({ ids });
 }
 

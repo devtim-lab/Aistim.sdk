@@ -11,7 +11,8 @@
         "https://*.erzap.com/stok_opnams*"
       ],
       "world": "USER_SCRIPT",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "e350d454985a1e298f6db31844ad0be8199b515a4f7b9e7243ab83902599bf12"
     },
     {
       "id": "koreksiso",
@@ -24,20 +25,22 @@
         "https://*.erzap.com/stok_opnams/proses_koreksi_so/*"
       ],
       "world": "MAIN",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "c2caeb63084f82cf9736cafd59baa4e5e74bf2ac426c2c992e997d6dfed87fb6"
     },
     {
       "id": "rekam",
       "tipe": "inject",
-      "nama": "devtool",
-      "versi": "1.4.1",
-      "deskripsi": "[v1.4.1] Hasil rekaman memuat struktur halaman (tabel, filter, kata 'website'). Tombol merekam klik & request (fetch/XHR) di SEMUA halaman Erzap untuk dikirim ke developer. TERSEMBUNYI secara default: aktif hanya setelah buka halaman dengan ?rekam=1 (matikan lagi dengan ?rekam=0). Token/cookie tidak ikut direkam.",
+      "nama": "Devtool",
+      "versi": "1.4.2",
+      "deskripsi": "[v1.4.2] Hasil rekaman memuat struktur halaman (tabel, filter, kata 'website'). Tombol merekam klik & request (fetch/XHR) di SEMUA halaman Erzap untuk dikirim ke developer. TERSEMBUNYI secara default: aktif hanya setelah buka halaman dengan ?rekam=1 (matikan lagi dengan ?rekam=0). Token/cookie tidak ikut direkam.",
       "file": "rekam.js",
       "matches": [
         "https://*.erzap.com/*"
       ],
       "world": "MAIN",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "e482cb47d8be993ffb3085dc9ec7b712a3f13aadd2dc549c155ce9bdddbf7efd"
     },
     {
       "id": "analisastok",
@@ -50,7 +53,8 @@
         "https://*.erzap.com/produk_gudangs/lihat_stok/new*"
       ],
       "world": "MAIN",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "3d065dfc5ab13a51e1cb8a205027cb13fd9fc0d10fb0815c145eef1b708f038c"
     },
     {
       "id": "kelolaservis",
@@ -64,7 +68,8 @@
         "https://*.erzap.com/servis_elektroniks/kelola_servis/*"
       ],
       "world": "USER_SCRIPT",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "fcd7a40dc7d2c8691dea5cc87e1473ee8e5f8ebee9d591a5cdef40bbd448fe0a"
     },
     {
       "id": "pemindahan",
@@ -77,7 +82,8 @@
         "https://*.erzap.com/pemindahan_barangs*"
       ],
       "world": "MAIN",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "676ac905310bcf18aad73baf40ace3109c3d7361876581ef47b1e1fe1b08e158"
     },
     {
       "id": "servisindex",
@@ -92,20 +98,22 @@
         "https://*.erzap.com/servis_elektroniks/"
       ],
       "world": "USER_SCRIPT",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "7194faf1656def5f43f15d93608680cdc026ddc1c06752fa9d0907c4eac1159f"
     },
     {
       "id": "pesanan_web",
       "tipe": "inject",
       "nama": "Erzap - Pesanan Web (Lonceng)",
-      "versi": "1.26.0",
+      "versi": "1.26.2",
       "deskripsi": "Tombol lonceng melayang (FAB, bisa digeser) di halaman Erzap: daftar nota pesanan dari web (partdistro) yang nomor fakturnya berpola 1XXXXXXXXXXX-ddMMyyJJmm dan badge jumlah nota baru.",
       "file": "pesanan_web.js",
       "matches": [
         "https://*.erzap.com/*"
       ],
       "world": "USER_SCRIPT",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "00c0a456ef5006f3d7c20bdde6e4479a5168531c522fb8a48fa3970e8941f6d9"
     },
     {
       "id": "olzap",
@@ -118,7 +126,8 @@
         "https://*.erzap.com/produks*"
       ],
       "world": "MAIN",
-      "runAt": "document_start"
+      "runAt": "document_start",
+      "sha256": "7668bbdfaa39d93278d13e81f27dfe2a0190734ddbb2743f51c66461e51b5411"
     },
     {
       "id": "rekapservis",
@@ -131,7 +140,8 @@
         "https://*.erzap.com/servis_elektroniks/*"
       ],
       "world": "USER_SCRIPT",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "56c6abdfa57c242e9fc01ad041a6d2e898d89a7d6ea2beaac073e4d318512f93"
     },
     {
       "id": "halo",
@@ -139,7 +149,8 @@
       "nama": "Halo Dunia",
       "versi": "1.0.0",
       "deskripsi": "Contoh script popup: menampilkan sapaan dan waktu.",
-      "file": "halo.js"
+      "file": "halo.js",
+      "sha256": "956f7d761aa57a69ae33f4ad6d343d6595fa788304ffda5307fe4c6825cc9412"
     },
     {
       "id": "tombol_so_list",
@@ -152,7 +163,8 @@
         "https://*.erzap.com/stok_opnams*"
       ],
       "world": "USER_SCRIPT",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "67f3a2e68f37de8f3a277a5aac440f28529f2b2c3cecbb160904526655d59b71"
     },
     {
       "id": "info",
@@ -160,7 +172,8 @@
       "nama": "Info Browser",
       "versi": "1.0.0",
       "deskripsi": "Contoh script popup: menampilkan info layar dan bahasa.",
-      "file": "info.js"
+      "file": "info.js",
+      "sha256": "cb55a49af2c05e731ffb207cdc19095d3a6f04646a57c7ee2f15ca1ad9ff38d8"
     },
     {
       "id": "rakstok",
@@ -174,7 +187,8 @@
         "https://*.erzap.com/produks/*/edit*"
       ],
       "world": "USER_SCRIPT",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "5bbaa012627f6bc613441431c7ab6cd9c5d58fd107ed4dc0f955a073620c23d9"
     },
     {
       "id": "rak_barang",
@@ -187,7 +201,8 @@
         "https://*.erzap.com/rak_barangs*"
       ],
       "world": "USER_SCRIPT",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "e4366da8f0aa5e5844fac0384b91db2f60f1d01eec3cfb21f2d237a0a9bf87dd"
     },
     {
       "id": "smart_repair",
@@ -200,7 +215,9 @@
         "https://*.erzap.com/servis_elektroniks/new*"
       ],
       "world": "USER_SCRIPT",
-      "runAt": "document_idle"
+      "runAt": "document_idle",
+      "sha256": "fee3459378ab7eef931e13c11f6b9accd821f4d63da33d782c619f31f95c425e"
     }
-  ]
+  ],
+  "tandatangan": "gi4MVnf2FHKnyS1FHRAhW4TKIE4rgcTBCUXPWkNt1sVm22UQkPJhKKHco3ePap4VTmrCQfMl8lLqsJ/oXnxcSw=="
 }
