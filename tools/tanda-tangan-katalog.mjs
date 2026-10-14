@@ -11,6 +11,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -53,6 +54,13 @@ const data = JSON.parse(fs.readFileSync(indexPath, "utf8"));
 delete data.tandatangan;
 for (const s of data.scripts) s.sha256 = crypto.createHash("sha256").update(fs.readFileSync(path.join(dir, s.file))).digest("hex");
 const badan = JSON.stringify(data.scripts);
-data.tandatangan = crypto.sign("sha256", Buffer.from(badan), { key: pem, dsaEncoding: "ieee-p1363" }).toString("base64");
+// ECDSA menghasilkan tanda tangan berbeda tiap kali. Kalau isi katalog sama dengan versi di commit terakhir,
+// pakai ulang tanda tangan lama (masih sah untuk isi yang sama) supaya tidak ada commit otomatis tanpa perubahan.
+let lama = null;
+try {
+  const prev = JSON.parse(execFileSync("git", ["show", "HEAD:extension/scripts/index.json"], { cwd: root, stdio: ["ignore", "pipe", "ignore"] }).toString("utf8"));
+  if (prev && typeof prev.tandatangan === "string" && JSON.stringify(prev.scripts) === badan) lama = prev.tandatangan;
+} catch { /* belum ada versi sebelumnya */ }
+data.tandatangan = lama || crypto.sign("sha256", Buffer.from(badan), { key: pem, dsaEncoding: "ieee-p1363" }).toString("base64");
 fs.writeFileSync(indexPath, JSON.stringify(data, null, 2) + "\n");
-console.log(`Katalog ditandatangani: ${data.scripts.length} script.`);
+console.log(lama ? `Katalog tidak berubah: tanda tangan lama dipakai ulang (${data.scripts.length} script).` : `Katalog ditandatangani: ${data.scripts.length} script.`);
