@@ -1,0 +1,2 @@
+# Script dan katalog dihitung hash-nya byte demi byte: jangan ubah akhir baris (harus LF di GitHub maupun di komputer).
+extension/scripts/* -text eol=lf
