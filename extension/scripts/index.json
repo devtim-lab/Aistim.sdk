@@ -43,20 +43,6 @@
       "sha256": "a3748ad031610327829f7b69a570ecda9702891cdce0a1902cdd510194721bee"
     },
     {
-      "id": "analisastok",
-      "tipe": "inject",
-      "nama": "Erzap - Analisa Stok",
-      "versi": "1.20.7",
-      "deskripsi": "v1.20.7 - fix: bacaAktifitasViaFetch (panel otomatis) sekarang panggil langsung endpoint paginasi asli (GET halaman 1, POST halaman berikutnya dengan cursor page/idproduk_harga_last/kode_transaksi_last) ketauan dari Network tab — bukan scroll-simulasi ke DOM tersembunyi yang tidak pernah trigger lazy-load-nya",
-      "file": "analisastok.js",
-      "matches": [
-        "https://*.erzap.com/produk_gudangs/lihat_stok/new*"
-      ],
-      "world": "MAIN",
-      "runAt": "document_idle",
-      "sha256": "4bf826a569c6681201b4dd0526e0c6622453fd4462954bdb21d0a43bc3fe249b"
-    },
-    {
       "id": "kelolaservis",
       "tipe": "inject",
       "nama": "Erzap - Kolom Outlet di Kelola Servis",
@@ -113,7 +99,7 @@
       ],
       "world": "USER_SCRIPT",
       "runAt": "document_idle",
-      "sha256": "df729d4b04048a91a11971ef151bd26ea6e990531b3cf193a5f8d0a5cc5a266e"
+      "sha256": "667b24967fde8dbdc6bc4db3db7c75c094df0f79d8bdd580737334803590bf7e"
     },
     {
       "id": "olzap",
@@ -219,5 +205,5 @@
       "sha256": "4aead2e83010ad05bac31f01e560c53a37fe4fe1b8b3718e447568c1be84e81b"
     }
   ],
-  "tandatangan": "+9uHmxlUklSEJtkl76kePtys7NHGPMTvRihy6QjF4MDbRecpFziJvr47z7MXVNyPnkH1Wbk2MgVrTaw70fDikg=="
+  "tandatangan": "tf9iJKwGC/JBy7COXlx9bDfVNvq6JnyoaZahoOu/hEd5bUOHz6EMCXogf5cirSsBkV9+Ug64WBKUqnlnMiUo1w=="
 }
